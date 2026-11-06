@@ -246,7 +246,7 @@ Windows, `.icns` en macOS).
 
 | Síntoma | Causa | Solución |
 |---|---|---|
-| **Ejecutar pruebas** avisa de que no hay casos, o el botón parece no responder | El jar no contiene `casos-prueba.csv` (típico de un jar exportado desde el IDE sin la carpeta de recursos) | La aplicación ya cae en el **banco integrado** y ejecuta los 22 casos. Para recuperar el archivo: `jar tf target/afd-uni.jar \| grep casos-prueba.csv`; si falta, generar el paquete con `mvn -q clean package` |
+| **Ejecutar pruebas** avisa de que no hay casos, o el botón parece no responder | El jar no contiene `casos-prueba.csv` (típico de un jar exportado desde el IDE sin la carpeta de recursos) | La aplicación ya cae en el **banco integrado**, ejecuta los 22 casos y lo advierte en el resumen («se usó el banco integrado»). Para recuperar el archivo: `jar tf target/afd-uni.jar \| grep casos-prueba.csv`; si falta, generar el paquete con `mvn -q clean package` |
 | Aparece un diálogo con una excepción al pulsar el botón | Fallo inesperado dentro de la batería | El diálogo muestra la clase y el mensaje de la excepción; con esa información se localiza el problema (antes el error solo se escribía en una consola inexistente) |
 | `no main manifest attribute, in afd-uni.jar` | Se está abriendo el jar original que deja *shade* | Ejecutar `target/afd-uni.jar`, no `target/original-afd-uni.jar` |
 | `UnsupportedClassVersionError` | La JVM es anterior a Java 17 | Instalar un JRE 17 o entregar la app nativa de `jpackage`, que incluye su propia máquina virtual |

@@ -156,8 +156,12 @@ public final class ControladorValidador {
 
         String resumen = correctos + "/" + total + " casos esperados correctos";
         ventana.getPanelValidacion().mostrarDetalle("Batería de pruebas: " + resumen);
+        String nota = BancoCasos.NOMBRE_INTEGRADO.equals(origenBanco)
+                ? "\n\nNota: el paquete no incluye " + BancoCasos.RECURSO
+                        + " y se usó el " + BancoCasos.NOMBRE_INTEGRADO + "."
+                : "";
         JOptionPane.showMessageDialog(ventana,
-                "Se validaron " + total + " casos de " + origenBanco + ".\n" + resumen,
+                "Se validaron " + total + " casos de " + origenBanco + ".\n" + resumen + nota,
                 "Ejecutar pruebas", JOptionPane.INFORMATION_MESSAGE);
         REGISTRO.log(Level.FINE, "Batería ejecutada: {0}", resumen);
     }
