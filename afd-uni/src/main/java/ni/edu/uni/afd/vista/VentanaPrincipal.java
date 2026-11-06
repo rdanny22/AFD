@@ -70,7 +70,7 @@ public final class VentanaPrincipal extends JFrame {
 
     private JPanel pie() {
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
-        botonDiagrama.setToolTipText("Muestra docs/diagrama-afd.png desde los recursos");
+        botonDiagrama.setToolTipText("Dibuja el diagrama de estados del AFD en pantalla");
         botonTablaDelta.setToolTipText("Muestra la matriz δ agrupada por clases de símbolos");
         acciones.add(botonDiagrama);
         acciones.add(botonTablaDelta);

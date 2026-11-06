@@ -30,6 +30,9 @@ public final class ControladorValidador {
     private final Automata automata = new Automata();
     private final BancoCasos banco;
 
+    private DialogoDiagrama diagrama;
+    private ResultadoValidacion ultimaValidacion;
+
     /**
      * Crea el controlador y carga el banco de casos de prueba.
      *
@@ -62,7 +65,7 @@ public final class ControladorValidador {
         traza.getBotonPruebas().addActionListener(evento -> ejecutarBateria());
         traza.getBotonLimpiar().addActionListener(evento -> limpiar());
 
-        ventana.getBotonDiagrama().addActionListener(evento -> DialogoDiagrama.mostrar(ventana));
+        ventana.getBotonDiagrama().addActionListener(evento -> mostrarDiagrama());
         ventana.getBotonTablaDelta().addActionListener(evento -> DialogoTablaDelta.mostrar(ventana));
     }
 
@@ -75,6 +78,8 @@ public final class ControladorValidador {
 
         ventana.getPanelValidacion().mostrarResultado(resultado);
         ventana.getPanelTraza().agregar(resultado, banco.esperadoPara(cadena));
+        ultimaValidacion = resultado;
+        sincronizarDiagrama();
 
         REGISTRO.log(Level.FINE, "Validación de «{0}»: {1} ({2})",
                 new Object[] {cadena, resultado.tipo().etiqueta(), resultado.motivo()});
@@ -120,10 +125,12 @@ public final class ControladorValidador {
         for (CasoPrueba caso : banco.casos()) {
             ResultadoValidacion resultado = automata.validar(caso.cadena());
             traza.agregar(resultado, Boolean.valueOf(caso.esperado()));
+            ultimaValidacion = resultado;
             if (resultado.aceptado() == caso.esperado()) {
                 correctos++;
             }
         }
+        sincronizarDiagrama();
 
         String resumen = correctos + "/" + total + " casos esperados correctos";
         ventana.getPanelValidacion().mostrarDetalle("Batería de pruebas: " + resumen);
@@ -134,11 +141,31 @@ public final class ControladorValidador {
     }
 
     /**
+     * Abre —o trae al frente— la ventana que dibuja el AFD en pantalla.
+     */
+    public void mostrarDiagrama() {
+        if (diagrama == null || !diagrama.isDisplayable()) {
+            diagrama = new DialogoDiagrama(ventana);
+            diagrama.actualizarTraza(ultimaValidacion);
+        }
+        diagrama.setVisible(true);
+        diagrama.toFront();
+    }
+
+    private void sincronizarDiagrama() {
+        if (diagrama != null && diagrama.isDisplayable()) {
+            diagrama.actualizarTraza(ultimaValidacion);
+        }
+    }
+
+    /**
      * Limpia la tabla de traza, el campo y el veredicto.
      */
     public void limpiar() {
         ventana.getPanelTraza().limpiar();
         ventana.getPanelValidacion().reiniciar();
+        ultimaValidacion = null;
+        sincronizarDiagrama();
     }
 
     /** @return el banco de casos cargado */

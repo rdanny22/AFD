@@ -112,9 +112,24 @@ La tabla completa con el conteo de transiciones por estado está en
 3. **Cadena vacía o nula:** rechazo con tipo `Cadena vacía`, sin excepciones.
 4. **Equivalencia:** `L(M) = { w ∈ Σ* | w ∈ [a-z]{2,4}·[0-9]{2,3}·"@uni.edu.ni" }`.
 
-### 2.4 Diagrama de estados
+### 2.4 Diagrama de estados (dibujado por el programa)
 
-![Diagrama del AFD](docs/diagrama-afd.png)
+El diagrama no es una imagen incrustada: la aplicación **lo dibuja en pantalla** con Java2D desde la
+matriz δ. Esta imagen la generó el propio renderizador de la aplicación
+(`PanelDiagrama.renderizar()`), sin herramientas externas:
+
+![Diagrama del AFD dibujado por la aplicación](docs/diagrama-afd.png)
+
+El botón **Ver diagrama del AFD** abre una ventana con ese dibujo vectorial, en vivo:
+
+- **Zoom** con `+`, `−` y `100 %`.
+- **Resaltar última validación**: pinta en naranja los estados y transiciones recorridos.
+- **Transiciones de rechazo**: añade las aristas punteadas que conducen a `q19`.
+- **Exportar PNG**: guarda el diagrama tal como se ve.
+
+Con la traza de `js25@uni.edu.ni` resaltada (el camino `q0→q1→q2→q5→q6→q8→…→q18`):
+
+![Diagrama con la traza resaltada](docs/diagrama-traza.png)
 
 Versión Mermaid (se renderiza en GitHub; las transiciones no dibujadas conducen a `q19`):
 
@@ -152,12 +167,12 @@ stateDiagram-v2
     q18 --> [*]
 ```
 
-Para regenerar el PNG desde la fuente Graphviz:
+El PNG de `docs/` lo produce la propia aplicación (botón **Exportar PNG** de la ventana del
+diagrama). La fuente Graphviz se conserva como alternativa formal, por si se desea el dibujo con
+`dot`:
 
 ```bash
-dot -Tpng docs/diagrama-afd.dot -o docs/diagrama-afd.png
-# y copiarlo a los recursos de la aplicación:
-cp docs/diagrama-afd.png src/main/resources/recursos/diagrama-afd.png
+dot -Tpng docs/diagrama-afd.dot -o /tmp/diagrama-graphviz.png
 ```
 
 ---
@@ -213,7 +228,7 @@ mvn -q test -Djava.awt.headless=true
 | Alerta modal | `JOptionPane` informativa si se acepta, de advertencia si se rechaza; aparece **después** de actualizar la tabla |
 | **Ejecutar pruebas** | Limpia la tabla, valida los 22 casos de `casos-prueba.csv` y resume `n/n casos esperados correctos` |
 | **Limpiar** | Vacía tabla, campo, veredicto y detalle; devuelve el foco al campo |
-| **Ver diagrama del AFD** | `JDialog` con `docs/diagrama-afd.png` embebido como recurso, con scroll |
+| **Ver diagrama del AFD** | Ventana no modal que **dibuja el autómata en pantalla** (Java2D): zoom, resaltado de la traza en vivo, transiciones de rechazo y exportación a PNG |
 | **Tabla de transiciones δ** | `JDialog` con la matriz agrupada por clases (20 filas), con nota explicativa |
 | Barra de estado | `Estado: q0 · |Σ| = 38 · Estados: 20 · Finales: 1` |
 | División vertical | `JSplitPane` 40/60 entre validación y traza |
@@ -245,8 +260,8 @@ afd-uni/
 ├─ README.md
 ├─ docs/
 │  ├─ diagrama-afd.dot            # fuente Graphviz
-│  ├─ diagrama-afd.png            # diagrama compilado
-│  ├─ diagrama-afd.svg            # versión vectorial
+│  ├─ diagrama-afd.png            # diagrama generado por la propia aplicación
+│  ├─ diagrama-traza.png          # el mismo dibujo con la traza resaltada
 │  ├─ captura-interfaz.png        # captura de la interfaz
 │  └─ tabla-transiciones.md       # δ completa y conteo de transiciones
 └─ src/
@@ -267,15 +282,16 @@ afd-uni/
    │  │  ├─ PanelValidacion.java
    │  │  ├─ PanelTraza.java
    │  │  ├─ TrazaTableModel.java
-   │  │  ├─ DialogoTablaDelta.java
-   │  │  └─ DialogoDiagrama.java
+   │  │  ├─ PanelDiagrama.java           # dibuja el AFD con Java2D (estados y etiquetas)
+   │  │  ├─ DialogoDiagrama.java         # ventana del diagrama: zoom, resaltado, exportar
+   │  │  └─ DialogoTablaDelta.java
    │  └─ controlador/
    │     └─ ControladorValidador.java    # conecta vista ↔ autómata
    ├─ main/resources/
-   │  ├─ casos-prueba.csv                # 22 casos con veredicto y descripción
-   │  └─ recursos/diagrama-afd.png       # imagen usada por el diálogo del diagrama
+   │  └─ casos-prueba.csv                # 22 casos con veredicto y descripción
    └─ test/java/ni/edu/uni/afd/
-      └─ AutomataTest.java               # 39 aserciones/invocaciones JUnit 5
+      ├─ AutomataTest.java               # 39 invocaciones JUnit 5 sobre el autómata
+      └─ PanelDiagramaTest.java          # 5 pruebas del dibujo del diagrama
 ```
 
 ---
@@ -296,7 +312,11 @@ afd-uni/
 9. Consistencia del banco `casos-prueba.csv` y dimensiones de la tabla agrupada.
 10. Determinismo: dos ejecuciones producen el mismo resultado.
 
-Resultado de la última ejecución: **39 de 39 invocaciones correctas**.
+`PanelDiagramaTest` (JUnit 5) verifica el dibujo: renderizado sin pantalla, las 22 transiciones
+etiquetadas, el resaltado de trazas aceptadas y rechazadas, el dibujo de las transiciones de rechazo y
+los límites del zoom.
+
+Resultado de la última ejecución: **44 de 44 invocaciones correctas** (39 del autómata + 5 del dibujo).
 
 ### 6.1 Batería mínima de casos
 
@@ -339,11 +359,15 @@ Resultado de la última ejecución: **39 de 39 invocaciones correctas**.
 6. **Sin expresiones regulares en la validación.** La referencia con `Pattern` aparece únicamente en
    las pruebas, como verificación cruzada.
 7. **Clases añadidas a la estructura sugerida:** `CasoPrueba` y `BancoCasos` (necesarias para leer
-   `casos-prueba.csv` y responder la columna `¿Esperado?`), y `TrazaTableModel` (mencionado en el
-   diseño de la tabla). Se separó la imagen del diagrama en `resources/recursos/` para cargarla como
-   `/recursos/diagrama-afd.png`.
+   `casos-prueba.csv` y responder la columna `¿Esperado?`), `TrazaTableModel` (mencionado en el diseño
+   de la tabla) y `PanelDiagrama` (dibuja el autómata con Java2D). No se incrusta ninguna imagen como
+   recurso: el diagrama se dibuja en tiempo de ejecución.
 8. **El dominio `@uni.edu.ni`** aparece en el código solo en constantes de mensajes y documentación;
    la validación se hace exclusivamente con la matriz δ.
+9. **El diagrama se dibuja con Java2D, no se incrusta una imagen.** `PanelDiagrama` calcula la
+   geometría de los 20 estados (dos filas en serpentina), traza las 22 aristas con sus etiquetas y
+   pinta resaltados; así el dibujo es vectorial, se adapta al zoom y se mantiene sincronizado con la
+   última validación. `docs/diagrama-afd.dot` se conserva como fuente Graphviz alternativa.
 
 ---
 
@@ -351,11 +375,13 @@ Resultado de la última ejecución: **39 de 39 invocaciones correctas**.
 
 | Comprobación | Resultado |
 |---|---|
-| Compilación de las 17 clases de producción con `-Xlint:all` | 0 errores, 0 advertencias |
+| Compilación de las 18 clases de producción con `-Xlint:all` | 0 errores, 0 advertencias |
 | Batería `AutomataTest` (39 invocaciones, incluidas 2 000 cadenas aleatorias) | 39/39 correctas |
+| Batería `PanelDiagramaTest` (5 pruebas del dibujo) | 5/5 correctas |
 | Consistencia de `casos-prueba.csv` (22 casos) | 22/22 correctos |
 | Composición de `PanelValidacion` y `PanelTraza` y captura de la interfaz | correcta (`docs/captura-interfaz.png`) |
-| Diagrama `.dot` compilado a PNG y SVG | correcto |
+| Dibujo del diagrama por la aplicación (PNG sin y con traza) | correcto (`docs/diagrama-afd.png`, `docs/diagrama-traza.png`) |
+| Fuente Graphviz alternativa `.dot` | válida (se puede compilar con `dot -Tpng`) |
 
 > Nota de transparencia: el entorno donde se generó este proyecto no tenía acceso a Maven Central, por
 > lo que `mvn package` no se ejecutó allí. La compilación se verificó con el compilador de Eclipse
