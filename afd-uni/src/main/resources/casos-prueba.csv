@@ -1,0 +1,23 @@
+cadena;esperado;descripcion
+js25@uni.edu.ni;ACEPTADO;Caso canónico del enunciado: 2 iniciales y 2 dígitos
+lmra123@uni.edu.ni;ACEPTADO;Límites máximos: 4 iniciales y 3 dígitos
+ab12@uni.edu.ni;ACEPTADO;Límites mínimos: 2 iniciales y 2 dígitos
+abcd999@uni.edu.ni;ACEPTADO;Límites máximos en ambas partes
+Js25@unicomp.edu;RECHAZADO;La mayúscula J no pertenece a Sigma
+j@unicomp.edu;RECHAZADO;Falta el número y el dominio es incorrecto
+js25@unicom.edu;RECHAZADO;Dominio mal escrito
+abc123@gmail.com;RECHAZADO;Dominio incorrecto
+JS25@uni.edu.ni;RECHAZADO;Iniciales en mayúscula
+js25@UNI.EDU.NI;RECHAZADO;Dominio en mayúsculas
+js2@uni.edu.ni;RECHAZADO;Un solo dígito: se requieren 2 o 3
+js2500@uni.edu.ni;RECHAZADO;Cuatro dígitos: se requieren 2 o 3
+a12@uni.edu.ni;RECHAZADO;Una sola inicial: se requieren de 2 a 4
+abcde12@uni.edu.ni;RECHAZADO;Cinco iniciales: se requieren de 2 a 4
+js25@uni.edu.ni.mx;RECHAZADO;Caracteres extra después de alcanzar q18
+js25uni.edu.ni;RECHAZADO;Falta la arroba del dominio
+js25@uni.edu.ni ;RECHAZADO;Espacio final: carácter fuera de Sigma
+js25@uni.edu;RECHAZADO;Dominio truncado
+js25@uni.edu.n;RECHAZADO;Dominio truncado
+js25@uni.edu.ni#;RECHAZADO;Carácter fuera de Sigma después de q18
+js25;RECHAZADO;Falta el número y el dominio
+;RECHAZADO;Cadena vacía: q0 no es un estado final
