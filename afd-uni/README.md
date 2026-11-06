@@ -193,6 +193,55 @@ Pruebas sin pantalla (por ejemplo en un servidor):
 mvn -q test -Djava.awt.headless=true
 ```
 
+### 3.1 Convertirlo en una aplicación ejecutable
+
+El `pom.xml` ya genera un **jar ejecutable y autocontenido**: `maven-shade-plugin` fija
+`Main-Class: ni.edu.uni.afd.Main` y la aplicación no tiene dependencias de ejecución (JUnit es solo
+para pruebas), por lo que el jar (~60 KB) funciona con cualquier JRE 17 sin classpath adicional.
+
+| Nivel | Comando | Resultado |
+|---|---|---|
+| **1. Jar ejecutable** | `mvn -q clean package` | `target/afd-uni.jar` · se ejecuta con `java -jar`, doble clic o un acceso directo |
+| **2. Lanzador sin consola** | `./scripts/ejecutar.sh` (Linux/macOS)<br>`scripts\ejecutar.bat` (Windows) | Abre la app con `javaw` (Windows) sin ventana negra de consola |
+| **3. App nativa con su propio Java** | `./scripts/empaquetar-nativo.sh` | `target/nativo/AFD-UNI/` con la JVM incluida: **no requiere Java instalado** |
+| **4. Instalador** | `./scripts/empaquetar-nativo.sh msi` (Windows)<br>`.sh deb` / `rpm` (Linux)<br>`.sh dmg` (macOS) | Instalador nativo del sistema operativo |
+
+Detalles de cada nivel:
+
+1. **Jar ejecutable.** Es el artefacto principal; también sirve para distribuirlo por correo o
+   subirlo a un aula virtual. En Windows, si el doble clic no lo abre, asocie los `.jar` a
+   `javaw.exe` o use el lanzador del punto 2. En macOS/Linux: `chmod +x` sobre un script o un
+   `.desktop` que llame a `java -jar`.
+2. **Lanzador.** `scripts/ejecutar.sh` y `scripts/ejecutar.bat` compilan el jar si aún no existe y
+   arrancan la aplicación (`java` en Linux/macOS, `javaw` en Windows para no dejar consola abierta).
+   Usan `JAVA_HOME` si está definido y, si no, el `java` del `PATH`; si no encuentran Java, muestran
+   un error claro en lugar de fallar en silencio.
+3. **App nativa (`jpackage`).** Requiere un **JDK completo 17+** (no un JRE) y genera una carpeta
+   `AFD-UNI/` con `bin/AFD-UNI` (o `AFD-UNI.exe`) y su propio runtime recortado. Es la forma más
+   profesional de entregar el trabajo: funciona en equipos sin Java.
+4. **Instaladores.** `jpackage --type msi`/`exe` en Windows (requiere WiX Toolset), `deb`/`rpm` en
+   Linux y `dmg`/`pkg` en macOS. Cada instalador debe generarse **en su propio sistema operativo**:
+   `jpackage` no compila de forma cruzada. En macOS y Windows los instaladores deben firmarse para
+   evitar avisos del sistema.
+
+Ejemplo manual equivalente al script (Linux/macOS):
+
+```bash
+mvn -q clean package
+mkdir -p target/jpackage-input && cp target/afd-uni.jar target/jpackage-input/
+jpackage --type app-image --name AFD-UNI --app-version 1.0.0 \
+         --input target/jpackage-input --main-jar afd-uni.jar \
+         --main-class ni.edu.uni.afd.Main \
+         --java-options "-Dfile.encoding=UTF-8" --dest target/nativo
+```
+
+Para poner un icono propio: `export ICONO=ruta/icono.png` antes de ejecutar el script (`.ico` en
+Windows, `.icns` en macOS).
+
+> **Alternativa para Windows:** [Launch4j](https://launch4j.sourceforge.net/) envuelve el jar en un
+> `.exe` con icono e incluso puede incrustar una JRE. `jpackage` cubre el mismo caso sin herramientas
+> adicionales, por eso es la opción documentada.
+
 ---
 
 ## 4. La interfaz
@@ -258,6 +307,10 @@ La columna `#` admite ordenamiento (`RowSorter`); las filas no son editables.
 afd-uni/
 ├─ pom.xml
 ├─ README.md
+├─ scripts/
+│  ├─ ejecutar.sh                  # lanza la app desde el jar (compila si falta)
+│  ├─ ejecutar.bat                 # ídem en Windows, sin consola (javaw)
+│  └─ empaquetar-nativo.sh         # app nativa e instaladores con jpackage
 ├─ docs/
 │  ├─ diagrama-afd.dot            # fuente Graphviz
 │  ├─ diagrama-afd.png            # diagrama generado por la propia aplicación

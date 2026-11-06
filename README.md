@@ -13,8 +13,11 @@ Autómata Finito Determinista que reconoce correos institucionales con la estruc
 ```bash
 cd afd-uni
 mvn -q clean package
-java -jar target/afd-uni.jar
+java -jar target/afd-uni.jar      # o bien: ./scripts/ejecutar.sh
 ```
+
+Para generar una **aplicación nativa** con su propio Java (sin instalar nada en el equipo destino):
+`./scripts/empaquetar-nativo.sh`
 
 - Documentación técnica, tupla `M = (Q, Σ, δ, q0, F)`, diagramas e instrucciones: [`afd-uni/README.md`](afd-uni/README.md)
 - Tabla de transiciones completa: [`afd-uni/docs/tabla-transiciones.md`](afd-uni/docs/tabla-transiciones.md)
