@@ -242,6 +242,17 @@ Windows, `.icns` en macOS).
 > `.exe` con icono e incluso puede incrustar una JRE. `jpackage` cubre el mismo caso sin herramientas
 > adicionales, por eso es la opción documentada.
 
+### 3.2 Problemas frecuentes con el jar
+
+| Síntoma | Causa | Solución |
+|---|---|---|
+| **Ejecutar pruebas** avisa de que no hay casos, o el botón parece no responder | El jar no contiene `casos-prueba.csv` (típico de un jar exportado desde el IDE sin la carpeta de recursos) | La aplicación ya cae en el **banco integrado** y ejecuta los 22 casos. Para recuperar el archivo: `jar tf target/afd-uni.jar \| grep casos-prueba.csv`; si falta, generar el paquete con `mvn -q clean package` |
+| Aparece un diálogo con una excepción al pulsar el botón | Fallo inesperado dentro de la batería | El diálogo muestra la clase y el mensaje de la excepción; con esa información se localiza el problema (antes el error solo se escribía en una consola inexistente) |
+| `no main manifest attribute, in afd-uni.jar` | Se está abriendo el jar original que deja *shade* | Ejecutar `target/afd-uni.jar`, no `target/original-afd-uni.jar` |
+| `UnsupportedClassVersionError` | La JVM es anterior a Java 17 | Instalar un JRE 17 o entregar la app nativa de `jpackage`, que incluye su propia máquina virtual |
+| El doble clic en Windows no abre nada | Asociación de archivos `.jar` ausente o rota | Usar `scripts\ejecutar.bat`, que llama a `javaw -jar`, o asociar los `.jar` a `javaw.exe` |
+| Los acentos y el símbolo `Σ` se ven mal | Consola con codificación distinta de UTF-8 | Añadir `-Dfile.encoding=UTF-8` (los lanzadores del proyecto ya lo hacen) |
+
 ---
 
 ## 4. La interfaz
@@ -275,7 +286,7 @@ Windows, `.icns` en macOS).
 | Etiqueta de veredicto | `ACEPTADO` en verde / `RECHAZADO` en rojo; gris “Esperando validación…” antes de validar |
 | Etiqueta de detalle | `Estado final: q18 …` o `Fallo en la posición 0 ('J') — símbolo no permitido · estado q19` |
 | Alerta modal | `JOptionPane` informativa si se acepta, de advertencia si se rechaza; aparece **después** de actualizar la tabla |
-| **Ejecutar pruebas** | Limpia la tabla, valida los 22 casos de `casos-prueba.csv` y resume `n/n casos esperados correctos` |
+| **Ejecutar pruebas** | Limpia la tabla, valida los 22 casos de `casos-prueba.csv` y resume `n/n casos esperados correctos`. Si el recurso no está en el paquete, usa el banco integrado de respaldo |
 | **Limpiar** | Vacía tabla, campo, veredicto y detalle; devuelve el foco al campo |
 | **Ver diagrama del AFD** | Ventana no modal que **dibuja el autómata en pantalla** (Java2D): zoom, resaltado de la traza en vivo, transiciones de rechazo y exportación a PNG |
 | **Tabla de transiciones δ** | `JDialog` con la matriz agrupada por clases (20 filas), con nota explicativa |
@@ -329,7 +340,7 @@ afd-uni/
    │  │  ├─ Paso.java                    # record: un paso δ(q, s) = q'
    │  │  ├─ TipoResultado.java           # enum de clasificación del resultado
    │  │  ├─ CasoPrueba.java              # record de un caso del banco
-   │  │  └─ BancoCasos.java              # carga casos-prueba.csv
+   │  │  └─ BancoCasos.java              # carga casos-prueba.csv + banco integrado de respaldo
    │  ├─ vista/
    │  │  ├─ VentanaPrincipal.java
    │  │  ├─ PanelValidacion.java
@@ -344,6 +355,7 @@ afd-uni/
    │  └─ casos-prueba.csv                # 22 casos con veredicto y descripción
    └─ test/java/ni/edu/uni/afd/
       ├─ AutomataTest.java               # 39 invocaciones JUnit 5 sobre el autómata
+      ├─ BancoCasosTest.java             # 3 pruebas del banco de casos y de la batería
       └─ PanelDiagramaTest.java          # 5 pruebas del dibujo del diagrama
 ```
 
@@ -369,7 +381,12 @@ afd-uni/
 etiquetadas, el resaltado de trazas aceptadas y rechazadas, el dibujo de las transiciones de rechazo y
 los límites del zoom.
 
-Resultado de la última ejecución: **44 de 44 invocaciones correctas** (39 del autómata + 5 del dibujo).
+`BancoCasosTest` (JUnit 5) verifica el banco de casos que consume el botón **Ejecutar pruebas**: que
+el banco integrado coincida caso por caso con `casos-prueba.csv`, que sus 22 casos produzcan el
+veredicto esperado y que la batería llene la tabla de traza **sin entorno gráfico**.
+
+Resultado de la última ejecución: **47 de 47 invocaciones correctas** (39 del autómata + 5 del dibujo
++ 3 del banco de casos).
 
 ### 6.1 Batería mínima de casos
 
@@ -417,6 +434,14 @@ Resultado de la última ejecución: **44 de 44 invocaciones correctas** (39 del 
    recurso: el diagrama se dibuja en tiempo de ejecución.
 8. **El dominio `@uni.edu.ni`** aparece en el código solo en constantes de mensajes y documentación;
    la validación se hace exclusivamente con la matriz δ.
+9. **Banco de casos con respaldo integrado.** `casos-prueba.csv` sigue siendo la fuente editable,
+   pero el programa lleva en el código una copia de los 22 mismos casos (`BancoCasos.incluido()`) que
+   se usa si el recurso no viaja en el paquete. La prueba `BancoCasosTest` compara ambas fuentes, de
+   modo que cualquier divergencia rompe la compilación. Así el botón «Ejecutar pruebas» funciona
+   incluso en un jar exportado sin la carpeta de recursos.
+10. **Errores visibles, nunca silenciosos.** La batería de pruebas se ejecuta dentro de un `try` y,
+    si algo falla, se muestra un diálogo con la clase y el mensaje de la excepción: al abrir el jar
+    con `javaw` no hay consola donde leer la traza.
 9. **El diagrama se dibuja con Java2D, no se incrusta una imagen.** `PanelDiagrama` calcula la
    geometría de los 20 estados (dos filas en serpentina), traza las 22 aristas con sus etiquetas y
    pinta resaltados; así el dibujo es vectorial, se adapta al zoom y se mantiene sincronizado con la
@@ -431,6 +456,8 @@ Resultado de la última ejecución: **44 de 44 invocaciones correctas** (39 del 
 | Compilación de las 18 clases de producción con `-Xlint:all` | 0 errores, 0 advertencias |
 | Batería `AutomataTest` (39 invocaciones, incluidas 2 000 cadenas aleatorias) | 39/39 correctas |
 | Batería `PanelDiagramaTest` (5 pruebas del dibujo) | 5/5 correctas |
+| Batería `BancoCasosTest` (3 pruebas del banco de casos) | 3/3 correctas |
+| Botón «Ejecutar pruebas» en un jar **sin** el recurso `casos-prueba.csv` | 22/22 con el banco integrado |
 | Consistencia de `casos-prueba.csv` (22 casos) | 22/22 correctos |
 | Composición de `PanelValidacion` y `PanelTraza` y captura de la interfaz | correcta (`docs/captura-interfaz.png`) |
 | Dibujo del diagrama por la aplicación (PNG sin y con traza) | correcto (`docs/diagrama-afd.png`, `docs/diagrama-traza.png`) |

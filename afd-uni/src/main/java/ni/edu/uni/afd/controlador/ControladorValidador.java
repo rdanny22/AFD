@@ -29,6 +29,7 @@ public final class ControladorValidador {
     private final VentanaPrincipal ventana;
     private final Automata automata = new Automata();
     private final BancoCasos banco;
+    private final String origenBanco;
 
     private DialogoDiagrama diagrama;
     private ResultadoValidacion ultimaValidacion;
@@ -40,16 +41,19 @@ public final class ControladorValidador {
      */
     public ControladorValidador(VentanaPrincipal ventana) {
         this.ventana = ventana;
-        this.banco = cargarBanco();
-    }
-
-    private static BancoCasos cargarBanco() {
+        String origen = BancoCasos.RECURSO;
+        BancoCasos cargado;
         try {
-            return BancoCasos.desdeRecurso();
+            cargado = BancoCasos.desdeRecurso();
         } catch (IOException excepcion) {
-            REGISTRO.log(Level.WARNING, "No se pudo cargar el banco de casos de prueba", excepcion);
-            return BancoCasos.vacio();
+            REGISTRO.log(Level.WARNING,
+                    "No se pudo leer " + BancoCasos.RECURSO + "; se usa el " + BancoCasos.NOMBRE_INTEGRADO,
+                    excepcion);
+            cargado = BancoCasos.incluido();
+            origen = BancoCasos.NOMBRE_INTEGRADO;
         }
+        this.banco = cargado;
+        this.origenBanco = origen;
     }
 
     /**
@@ -108,15 +112,33 @@ public final class ControladorValidador {
 
     /**
      * Ejecuta la batería completa de casos de prueba y llena la tabla de traza.
+     *
+     * <p>Cualquier fallo inesperado se muestra en un diálogo con su causa: al ejecutar desde un
+     * jar con {@code javaw} no hay consola donde leer la traza, de modo que un error silencioso se
+     * confundiría con un botón que no responde.</p>
      */
     public void ejecutarBateria() {
+        try {
+            ejecutarBateriaInterna();
+        } catch (RuntimeException excepcion) {
+            REGISTRO.log(Level.SEVERE, "Falló la ejecución de la batería de pruebas", excepcion);
+            JOptionPane.showMessageDialog(ventana,
+                    "No se pudo ejecutar la batería de pruebas.\n\n"
+                            + excepcion.getClass().getSimpleName() + ": " + excepcion.getMessage()
+                            + "\n\nBanco de casos: " + origenBanco,
+                    "Ejecutar pruebas", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void ejecutarBateriaInterna() {
         PanelTraza traza = ventana.getPanelTraza();
         traza.limpiar();
 
         int total = banco.total();
         if (total == 0) {
             JOptionPane.showMessageDialog(ventana,
-                    "No se pudo cargar el banco de casos (" + BancoCasos.RECURSO + ").",
+                    "El banco de casos está vacío (" + origenBanco + ").\n"
+                            + "No hay casos que ejecutar.",
                     "Ejecutar pruebas", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -135,7 +157,7 @@ public final class ControladorValidador {
         String resumen = correctos + "/" + total + " casos esperados correctos";
         ventana.getPanelValidacion().mostrarDetalle("Batería de pruebas: " + resumen);
         JOptionPane.showMessageDialog(ventana,
-                "Se validaron " + total + " casos de " + BancoCasos.RECURSO + ".\n" + resumen,
+                "Se validaron " + total + " casos de " + origenBanco + ".\n" + resumen,
                 "Ejecutar pruebas", JOptionPane.INFORMATION_MESSAGE);
         REGISTRO.log(Level.FINE, "Batería ejecutada: {0}", resumen);
     }
@@ -166,6 +188,15 @@ public final class ControladorValidador {
         ventana.getPanelValidacion().reiniciar();
         ultimaValidacion = null;
         sincronizarDiagrama();
+    }
+
+    /**
+     * Origen de los casos que ejecuta el botón «Ejecutar pruebas».
+     *
+     * @return {@code /casos-prueba.csv} o {@link BancoCasos#NOMBRE_INTEGRADO}
+     */
+    public String getOrigenBanco() {
+        return origenBanco;
     }
 
     /** @return el banco de casos cargado */
