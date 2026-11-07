@@ -271,7 +271,7 @@ Windows, `.icns` en macOS).
 │ Traza de ejecución del AFD           [Ejecutar pruebas] [Limpiar]         │
 │ # │ Cadena evaluada   │ Tipo      │ Secuencia de estados      │ Resultado │ ¿Esperado? │
 │ 1 │ js25@uni.edu.ni   │ Válido    │ q0→q1→q2→…→q18            │ Aceptado  │ Sí         │
-│ 2 │ Js25@unicomp.edu  │ Símbolo…  │ q0→q19 ⛔                 │ Rechazado │ No         │
+│ 2 │ Js25@unicomp.edu  │ Símbolo…  │ q0→q19 (corte)            │ Rechazado │ No         │
 ├───────────────────────────────────────────────────────────────────────────┤
 │ [Ver diagrama del AFD] [Tabla de transiciones δ]   Estado: q0 · |Σ| = 38  │
 └───────────────────────────────────────────────────────────────────────────┘
@@ -300,15 +300,15 @@ Windows, `.icns` en macOS).
 | `#` | Consecutivo de la evaluación (se reinicia con **Limpiar**) |
 | `Cadena evaluada` | Cadena tal como se ingresó (`«vacía»` si está vacía, `«nula»` si la entrada fue `null`) |
 | `Tipo` | `Válido`, `Cadena vacía`, `Símbolo no permitido`, `Iniciales inválidas`, `Dígitos inválidos`, `Dominio inválido`, `Caracteres extra` |
-| `Secuencia de estados` | Camino completo, monoespaciado; `⛔` cuando la cadena no se consumió por completo |
+| `Secuencia de estados` | Camino completo, monoespaciado; `(corte)` cuando la cadena no se consumió por completo |
 | `Resultado` | `Aceptado` (verde) o `Rechazado` (rojo) |
 | `¿Esperado?` | `Sí` / `No` si la cadena pertenece al banco de casos, `—` si no |
 
 La ayuda emergente de cada fila muestra el motivo del veredicto y la secuencia completa.
 La columna `#` admite ordenamiento (`RowSorter`); las filas no son editables.
 
-> Nota sobre `⛔`: el carácter U+26D4 requiere una fuente con símbolos/emoji. En sistemas sin ella se
-> muestra como un cuadro vacío; la información sigue siendo visible en la columna y en la alerta.
+> Nota sobre `(corte)`: la marca es texto plano para no depender de fuentes con símbolos o emoji;
+> indica que la cadena dejó de consumirse porque el autómata cayó en `q19`.
 
 ---
 
@@ -326,7 +326,10 @@ afd-uni/
 │  ├─ diagrama-afd.dot            # fuente Graphviz
 │  ├─ diagrama-afd.png            # diagrama generado por la propia aplicación
 │  ├─ diagrama-traza.png          # el mismo dibujo con la traza resaltada
-│  ├─ captura-interfaz.png        # captura de la interfaz
+│  ├─ captura-interfaz.png        # interfaz en su estado inicial
+│  ├─ captura-aceptado.png        # validación exitosa (figura B.1 del informe)
+│  ├─ captura-rechazado.png       # validación rechazada (figura B.2 del informe)
+│  ├─ captura-bateria.png         # ejecución de la batería de 22 casos
 │  └─ tabla-transiciones.md       # δ completa y conteo de transiciones
 └─ src/
    ├─ main/java/ni/edu/uni/afd/
@@ -459,7 +462,7 @@ Resultado de la última ejecución: **47 de 47 invocaciones correctas** (39 del 
 | Batería `BancoCasosTest` (3 pruebas del banco de casos) | 3/3 correctas |
 | Botón «Ejecutar pruebas» en un jar **sin** el recurso `casos-prueba.csv` | 22/22 con el banco integrado |
 | Consistencia de `casos-prueba.csv` (22 casos) | 22/22 correctos |
-| Composición de `PanelValidacion` y `PanelTraza` y captura de la interfaz | correcta (`docs/captura-interfaz.png`) |
+| Composición de `PanelValidacion` y `PanelTraza` y capturas de la interfaz | correctas (`docs/captura-*.png`) |
 | Dibujo del diagrama por la aplicación (PNG sin y con traza) | correcto (`docs/diagrama-afd.png`, `docs/diagrama-traza.png`) |
 | Fuente Graphviz alternativa `.dot` | válida (se puede compilar con `dot -Tpng`) |
 
