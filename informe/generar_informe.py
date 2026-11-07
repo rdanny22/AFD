@@ -375,55 +375,62 @@ doc.add_page_break()
 h(1, "2. Introducción")
 
 h(2, "2.1 Contexto institucional")
-parrafo("En la Universidad Nacional de Ingeniería (UNI) el correo institucional con el dominio "
-        "**@uni.edu.ni** funciona como la identidad digital del estudiante y del docente. Esa misma "
-        "dirección es la credencial de acceso a la plataforma virtual de aprendizaje, al catálogo de "
-        "la biblioteca digital, a los recursos de la red interna y a los servicios en línea de la "
-        "institución. Cuando el alta de una cuenta se hace a mano, es frecuente que se cometan "
-        "errores de digitación: una letra mayúscula, un dígito de más, un dominio escrito como "
-        "@uni.edu o @university.edu, un espacio invisible al final, o incluso una dirección de un "
-        "proveedor externo como @gmail.com. Cada una de esas variantes produce una cuenta que no "
-        "puede autenticarse, duplica identidades o deja la puerta abierta a suplantaciones.")
-parrafo("La validación automática del formato, ejecutada antes de crear la cuenta, resuelve el "
-        "problema en el punto más barato del proceso: el instante en que el usuario escribe. Un "
-        "validador determinista devuelve siempre el mismo veredicto para la misma entrada, explica "
-        "con precisión en qué posición se rompió la regla y permite que el sistema de registro, el "
-        "portal web o la aplicación de escritorio rechacen la solicitud antes de tocar la base de "
-        "datos. Este informe documenta el diseño formal, la implementación y la verificación de ese "
-        "validador, construido como un Autómata Finito Determinista (AFD) y no como una lista de "
-        "condiciones ad hoc.")
+parrafo("En la UNI, el correo @uni.edu.ni no es un adorno en la portada del carné: es la llave. "
+        "Con esa dirección entras a la plataforma virtual, pides libros en la biblioteca digital, "
+        "te conectas a la red interna y hasta firmas trámites. Es, en la práctica, tu identidad "
+        "digital dentro de la universidad.")
+parrafo("Y como toda llave, se puede copiar mal.")
+parrafo("Todos hemos visto el caso: alguien escribe **Js25@uni.edu.ni** con la mayúscula del "
+        "principio, o pone un dígito de más porque el número de carné se le quedó en la cabeza, o "
+        "teclea **@uni.edu** y se olvida del **.ni**. A veces el error es invisible: un espacio al "
+        "final, de esos que no se ven ni con la mejor de las vistas. Y de vez en cuando aparece un "
+        "**@gmail.com** en medio del registro, porque el formulario nunca dijo nada.")
+parrafo("El resultado siempre es el mismo: una cuenta que no autentica, un usuario duplicado en la "
+        "base de datos o, lo más delicado, una puerta abierta para que alguien se haga pasar por otra "
+        "persona. Corregir eso después cuesta mucho más que evitarlo al inicio: validar el formato "
+        "toma milisegundos, mientras que arreglar una cuenta mal creada puede costar una cola en la "
+        "oficina de TI.")
+parrafo("Por eso tiene sentido un validador automático. Y tiene más sentido todavía si corre "
+        "**mientras el usuario escribe**, no dos días después.")
 
 h(2, "2.2 Justificación teórica")
-parrafo("La teoría de lenguajes formales estudia los conjuntos de cadenas que pueden reconocerse "
-        "con modelos matemáticos precisos. Un **autómata finito determinista** es la quinta tupla "
-        "M = (Q, Σ, δ, q0, F), donde Q es un conjunto finito de estados, Σ un alfabeto finito, "
-        "δ: Q × Σ → Q una función de transición **total**, q0 el estado inicial y F ⊆ Q el conjunto "
-        "de estados finales. El lenguaje aceptado, L(M), está formado por las cadenas que llevan al "
-        "autómata desde q0 hasta algún estado de F. Todo lenguaje regular, y el formato de correo "
-        "institucional lo es, puede reconocerse con uno de estos autómatas (Hopcroft et al., 2007).")
-parrafo("Frente a una solución basada en expresiones regulares, el AFD ofrece tres ventajas que "
-        "resultan decisivas en un sistema institucional. Primero, el **determinismo**: para cada par "
-        "(estado, símbolo) existe exactamente una transición, de modo que no hay ambigüedad ni "
-        "necesidad de retroceder. Segundo, el **costo**: el reconocimiento examina cada símbolo una "
-        "sola vez, es decir, trabaja en tiempo O(n) con memoria constante, independientemente de la "
-        "longitud de la entrada. Tercero, la **trazabilidad**: como el autómata recuerda en qué "
-        "estado está, es posible explicar el rechazo indicando la posición exacta y la causa, algo "
-        "que una expresión regular no comunica por sí misma. La expresión regular equivalente se "
-        "usa en este proyecto únicamente como verificación cruzada en las pruebas.")
-parrafo("El modelo se implementó además con una separación estricta entre la lógica del autómata "
-        "(paquete **modelo**), la interfaz gráfica (paquete **vista**) y el controlador que los "
-        "conecta (paquete **controlador**), siguiendo el patrón Modelo–Vista–Controlador descrito "
-        "por Gamma et al. (1994). Esa separación permite probar el autómata sin abrir una ventana y "
-        "dibujar el diagrama de estados en pantalla a partir de la misma matriz de transición que "
-        "valida las cadenas.")
+parrafo("Pues bien: el formato de un correo institucional no es un capricho administrativo, es un "
+        "**lenguaje regular**. Y para los lenguajes regulares existe una herramienta matemática "
+        "precisa: el **autómata finito determinista**.")
+parrafo("Un AFD es una quinta tupla, **M = (Q, Σ, δ, q0, F)**: un conjunto finito de estados, un "
+        "alfabeto, una función de transición que siempre sabe a dónde ir, un estado inicial y un "
+        "conjunto de estados de aceptación. Nada más. Con eso se describe exactamente qué cadenas "
+        "pertenecen al lenguaje y cuáles no (Hopcroft et al., 2007).")
+parrafo("La pregunta obligada: ¿y por qué no usar simplemente una expresión regular? Se puede, "
+        "claro. Nosotros mismos la usamos… pero solo en las pruebas, como quien revisa la respuesta "
+        "con una calculadora. En el validador real nos quedamos con el autómata por tres razones "
+        "concretas.")
+parrafo("La primera es el **determinismo**. Para cada par (estado, símbolo) hay una y solo una "
+        "transición: no hay ambigüedad, no hay que retroceder, no hay dos caminos posibles. Si dos "
+        "personas validan el mismo correo, obtienen el mismo veredicto. Siempre.")
+parrafo("La segunda es el **costo**. El autómata lee la cadena una vez, de izquierda a derecha, y "
+        "nada más: tiempo O(n) y memoria constante, sin importar si el correo tiene diez caracteres "
+        "o sesenta.")
+parrafo("La tercera —y para nosotros la más valiosa— es la **trazabilidad**. Una expresión regular "
+        "responde «no coincide» y se queda callada. El autómata, en cambio, sabe en qué estado estaba "
+        "cuando algo salió mal, así que puede decir: la posición 5 tiene una 'U' mayúscula, y esa "
+        "letra no está en Σ. En un sistema institucional, la diferencia entre «está mal» y «está mal "
+        "por esto» vale oro.")
+parrafo("Ah, y algo que aprendimos en el camino: conviene separar la lógica del autómata de la "
+        "interfaz. El modelo no debería saber que existe una ventana. Con el patrón "
+        "Modelo–Vista–Controlador (Gamma et al., 1994), el paquete **modelo** valida, el paquete "
+        "**vista** dibuja y el **controlador** los conecta. Gracias a eso pudimos probar el AFD sin "
+        "abrir una sola ventana, y dibujar el diagrama en pantalla con la misma matriz que valida "
+        "las cadenas.")
 
 h(2, "2.3 Alcance del trabajo")
-parrafo("El entregable es una aplicación de escritorio en **Java 17 con Swing** que valida cadenas "
-        "del lenguaje institucional, muestra la traza completa de estados, dibuja el AFD en pantalla "
-        "y ejecuta una batería de 22 casos de prueba. El alcance se limita a la **validación de "
-        "formato**: el programa no comprueba si la cuenta existe en el directorio institucional ni "
-        "consulta servicios externos. El código fuente, la documentación técnica y las pruebas "
-        "automatizadas acompañan a este informe.")
+parrafo("Vale la pena aclarar los límites. El programa valida **formato**, no existencia: no "
+        "consulta el directorio institucional ni pregunta si la cuenta ya está creada. Eso queda "
+        "para una integración posterior.")
+parrafo("Lo que sí entrega el proyecto es una aplicación de escritorio en **Java 17 con Swing**, que "
+        "valida cadenas, muestra la traza completa de estados, dibuja el AFD en pantalla y ejecuta "
+        "una batería de 22 casos de prueba, con su código, su documentación y sus pruebas "
+        "automatizadas.")
 
 # --------------------------------------------------------------------------
 # 3. OBJETIVOS
@@ -438,20 +445,19 @@ parrafo("Diseñar, implementar y validar un Autómata Finito Determinista formal
         "inválidas y demostrando que la función de transición es total y determinista.")
 
 h(2, "3.2 Objetivos específicos")
-numerada("Formalizar la tupla matemática del autómata **M = (Q, Σ, δ, q0, F)**, identificando el "
-         "alfabeto de 38 símbolos y los 20 estados requeridos para contar iniciales, dígitos y "
-         "reconocer el dominio institucional.")
-numerada("Modelar la función de transición de estados mediante una **tabla formal** de 760 "
-         "transiciones (20 × 38) y su **diagrama de transición de estados**, con el estado inicial "
-         "señalado con flecha entrante y el estado de aceptación con doble círculo.")
-numerada("Implementar el autómata en Java 17 como una matriz explícita, sin expresiones regulares "
-         "en la lógica de validación, y construir una interfaz de escritorio que muestre el "
-         "veredicto, la traza y el diagrama del autómata.")
-numerada("Probar y evaluar el comportamiento del AFD procesando cadenas válidas e inválidas, con "
-         "una batería de 22 casos y 47 pruebas automatizadas, para verificar la precisión del "
-         "reconocimiento.")
-numerada("Documentar las decisiones de diseño, las ambigüedades resueltas del enunciado y los "
-         "resultados obtenidos, de modo que el trabajo pueda reproducirse y auditarse.")
+numerada("Formalizar la tupla **M = (Q, Σ, δ, q0, F)**, identificando el alfabeto de 38 símbolos "
+         "y los 20 estados que hacen falta para contar iniciales, contar dígitos y reconocer el "
+         "dominio.")
+numerada("Modelar la función de transición con una **tabla formal** de 760 transiciones "
+         "(20 × 38) y su **diagrama de estados**, con flecha entrante para el estado inicial y doble "
+         "círculo para el de aceptación.")
+numerada("Implementar el autómata en Java 17 como matriz explícita, sin expresiones regulares "
+         "dentro de la lógica, y construir una interfaz que muestre el veredicto, la traza y el "
+         "diagrama.")
+numerada("Probar el comportamiento del AFD con cadenas válidas e inválidas —22 casos de "
+         "batería y 47 pruebas automatizadas— para verificar la precisión del reconocimiento.")
+numerada("Dejar documentadas las decisiones y las ambigüedades del enunciado, de modo que "
+         "cualquiera pueda reproducir el trabajo y auditar por qué se eligió cada cosa.")
 
 # --------------------------------------------------------------------------
 # 4. DESCRIPCIÓN Y REGLAS DEL PROBLEMA
@@ -460,25 +466,30 @@ numerada("Documentar las decisiones de diseño, las ambigüedades resueltas del 
 h(1, "4. Descripción y reglas del problema")
 
 h(2, "4.1 Estructura del correo institucional")
-parrafo("La dirección institucional se compone de tres bloques consecutivos: un conjunto de "
-        "iniciales en minúsculas, un número y el dominio fijo de la universidad. La gramática "
-        "siguiente resume la estructura exigida; las llaves y corchetes indican repetición y "
-        "opcionalidad, respectivamente.")
+parrafo("Tomemos un ejemplo y desarmémoslo: **js25@uni.edu.ni**.")
+parrafo("Las iniciales son js: van en minúscula y deben ser entre dos y cuatro. El número es 25: dos "
+        "o tres dígitos, ni uno más ni uno menos. Y @uni.edu.ni es el dominio, fijo, exacto, sin "
+        "variaciones.")
+parrafo("En notación de gramática, la estructura queda así:")
 codigo([
     "<correo>     ::= <iniciales> <numero> \"@uni.edu.ni\"",
     "<iniciales>  ::= [a-z] [a-z] [a-z]? [a-z]?         (2 a 4 letras)",
     "<numero>     ::= [0-9] [0-9] [0-9]?                (2 a 3 dígitos)",
 ])
-parrafo("Ejemplos válidos: **js25@uni.edu.ni**, **lmra123@uni.edu.ni**, **ab12@uni.edu.ni** y "
-        "**abcd999@uni.edu.ni** (los dos últimos representan los límites mínimos y máximos). "
-        "Ejemplos inválidos: **Js25@unicomp.edu** (mayúscula no permitida), **j@unicomp.edu** "
-        "(falta el número), **js25@unicom.edu** (dominio erróneo) y **abc123@gmail.com** (dominio "
-        "incorrecto).")
+parrafo("¿Y si nos equivocamos? Ahí es donde el autómata gana su sueldo. En **Js25@unicomp.edu** "
+        "sobra una mayúscula que no debería estar; **j@unicomp.edu** se quedó sin número; "
+        "**js25@unicom.edu** escribió mal el dominio; y **abc123@gmail.com** ni siquiera es de la "
+        "UNI. Cuatro errores distintos, cuatro explicaciones distintas.")
 
 h(2, "4.2 Reglas formales de sintaxis")
-parrafo("Las reglas se aplican de forma conjunta y sin excepciones. En particular, la validación "
-        "es **estricta**: la cadena no se recorta, no se convierte a minúsculas y no admite "
-        "caracteres ocultos, porque un espacio o un salto de línea no pertenecen al alfabeto.")
+parrafo("Las reglas se aplican todas a la vez, sin excepciones ni «pero este caso sí». Van "
+        "resumidas en la Tabla 1, aunque conviene decirlo con palabras: iniciales de 2 a 4 letras "
+        "minúsculas, número de 2 a 3 dígitos, una sola arroba y el dominio @uni.edu.ni tal cual.")
+parrafo("Y un punto que nos costó discusiones: la validación es **estricta**. No recortamos espacios, "
+        "no pasamos todo a minúsculas, no «arreglamos» la entrada antes de revisarla. Si el usuario "
+        "escribió un espacio al final, ese espacio es un carácter fuera de Σ y la cadena se rechaza. "
+        "Suena duro, sí, pero es lo correcto: el sistema debe validar lo que el usuario escribió, no "
+        "lo que quisiéramos que hubiera escrito.")
 tabla(
     ["Elemento", "Regla formal", "Ejemplos válidos", "Ejemplos inválidos"],
     [
@@ -498,10 +509,15 @@ tabla(
     anchos=[2.6, 6.2, 3.4, 3.8], tam=9)
 
 h(2, "4.3 Clasificación de los veredictos")
-parrafo("El autómata no se limita a aceptar o rechazar: cuando rechaza, clasifica la causa según "
-        "el estado en el que se encontraba y el símbolo que provocó el fallo. Esa clasificación se "
-        "deriva del estado de origen de la transición y se utiliza para construir el mensaje que ve "
-        "el usuario.")
+parrafo("Rechazar no es suficiente. Un buen validador también explica. Por eso el autómata "
+        "clasifica el fallo según el estado desde el que se produjo la transición (Tabla 2).")
+parrafo("Son siete veredictos: **válido** (todo bien, terminó en q18); **símbolo no permitido** "
+        "(apareció algo fuera de Σ: una mayúscula, un espacio, un #); **iniciales inválidas** y "
+        "**dígitos inválidos** (el símbolo era válido, pero la parte de iniciales no llegó a dos "
+        "letras o el número se quedó en uno, o se pasó del máximo); **dominio inválido** (el dominio "
+        "no es el correcto o se quedó a medias); **caracteres extra** (llegamos a q18 y seguía "
+        "habiendo símbolos, como en js25@uni.edu.ni.mx); y **cadena vacía** (no hay nada que leer, y "
+        "q0 no es final).")
 tabla(
     ["Veredicto", "Cuándo se produce", "Ejemplo"],
     [
@@ -525,8 +541,9 @@ tabla(
     anchos=[3.4, 8.6, 4.0], tam=9)
 
 h(2, "4.4 Casos de prueba de referencia")
-parrafo("El enunciado propone cuatro cadenas inválidas y dos válidas. La tabla siguiente contrasta "
-        "cada una con el veredicto que produce la implementación; todas coinciden con lo esperado.")
+parrafo("El enunciado propone seis cadenas: dos válidas y cuatro inválidas. Las probamos una por "
+        "una y todas dieron lo esperado (Tabla 3). Es un alivio, porque son las que el docente va a "
+        "revisar primero.")
 tabla(
     ["Cadena", "Clasificación en el enunciado", "Veredicto del programa", "Tipo de rechazo"],
     [
@@ -541,10 +558,19 @@ tabla(
     anchos=[4.2, 5.0, 3.2, 3.6], tam=9)
 
 h(2, "4.5 Ambigüedades del enunciado y decisiones adoptadas")
-parrafo("El enunciado contiene tres imprecisiones que debían resolverse antes de construir la "
-        "matriz de transición. En todos los casos se adoptó la interpretación más estricta y "
-        "coherente con la teoría de conjuntos, y la decisión quedó registrada en la documentación "
-        "técnica del proyecto.")
+parrafo("Aquí toca ser honestos: el enunciado tenía tres o cuatro puntos que no cerraban del "
+        "todo, y hubo que decidir. Lo dejamos por escrito en la Tabla 4 para que no parezca "
+        "descuido.")
+parrafo("El alfabeto, por ejemplo, aparecía con las letras e, d, u, n, i repetidas y sin la llave de "
+        "cierre. Decisión: esas letras ya están dentro de a–z, así que el alfabeto correcto es "
+        "**Σ = {a–z} ∪ {0–9} ∪ {@, .}**, con 38 símbolos. Punto.")
+parrafo("Otro caso: el enunciado pedía clasificar js25@uni.edu.niX como «caracteres extra», pero la X "
+        "no pertenece a Σ. Y si no pertenece al alfabeto, no puede ser un carácter extra del "
+        "lenguaje: es un **símbolo no permitido**. Nos quedamos con la lectura estricta, que además "
+        "es la que respalda la teoría de conjuntos.")
+parrafo("Quedaba la duda de los espacios, la cadena vacía y el null. Respuesta corta: no se recorta "
+        "nada, la cadena vacía se rechaza porque q0 no es final, y null también se rechaza, pero sin "
+        "lanzar excepciones —un validador no debería caerse porque alguien le pasó un dato raro—.")
 tabla(
     ["Punto ambiguo", "Decisión adoptada"],
     [
@@ -572,9 +598,9 @@ tabla(
 # --------------------------------------------------------------------------
 
 h(1, "5. Formalización matemática del AFD")
-parrafo("El validador se define como el autómata **M = (Q, Σ, δ, q0, F)**, en el que cada elemento "
-        "está determinado por las reglas de la sección anterior. La tabla siguiente resume la tupla "
-        "completa; los apartados posteriores justifican cada componente.")
+parrafo("Con las reglas claras, el paso siguiente es traducirlas a la tupla formal. Cada elemento "
+        "de **M = (Q, Σ, δ, q0, F)** sale de lo que ya decidimos en la sección anterior; la tabla "
+        "siguiente lo resume y después justificamos cada pieza.")
 tabla(
     ["Símbolo", "Elemento", "Valor en este proyecto"],
     [
@@ -589,10 +615,9 @@ tabla(
     anchos=[2.0, 5.0, 9.0], tam=9, alineaciones=[CENTRO, IZQUIERDA, IZQUIERDA])
 
 h(2, "5.1 Alfabeto (Σ)")
-parrafo("El alfabeto reúne todos los símbolos que pueden aparecer en una dirección institucional "
-        "bien formada: las 26 letras minúsculas sin acentos, los 10 dígitos decimales y los dos "
-        "signos especiales del formato. La cardinalidad es 38 y **ningún otro carácter** forma "
-        "parte de Σ, de modo que mayúsculas, espacios, guiones, guiones bajos, acentos y saltos de "
+parrafo("Σ reúne todo lo que puede aparecer en una dirección bien formada: las 26 letras "
+        "minúsculas sin acentos, los 10 dígitos y los dos signos del formato. Son 38 símbolos y "
+        "**ningún otro carácter** entra, así que mayúsculas, espacios, guiones, acentos y saltos de "
         "línea quedan fuera del lenguaje.")
 tabla(
     ["Subconjunto", "Símbolos", "Cardinalidad"],
@@ -606,10 +631,13 @@ tabla(
     anchos=[4.0, 8.0, 4.0], tam=9, alineaciones=[IZQUIERDA, IZQUIERDA, CENTRO], color_total=True)
 
 h(2, "5.2 Conjunto de estados (Q)")
-parrafo("Los 20 estados se agrupan en cuatro etapas: conteo de iniciales, conteo de dígitos, "
-        "reconocimiento del dominio y estados terminales. Cada estado recuerda exactamente la parte "
-        "de la cadena que ya se leyó, que es la información mínima necesaria para decidir la "
-        "siguiente transición.")
+parrafo("Los 20 estados se agrupan en cuatro etapas: contar iniciales, contar dígitos, reconocer "
+        "el dominio y los dos estados terminales. La idea es siempre la misma: cada estado guarda la "
+        "parte de la cadena que ya se leyó, que es la información mínima para decidir la siguiente "
+        "transición. Ni un dato más, ni uno menos.")
+parrafo("La Tabla 7 los describe uno por uno. Vale la pena mirar dos: q2, donde ya se cumple el "
+        "mínimo de iniciales y el autómata admite letra o dígito; y q4, donde se alcanzó el máximo y "
+        "solo queda esperar el número.")
 tabla(
     ["Estado", "Etapa", "Qué se ha leído y qué se espera"],
     [
@@ -638,18 +666,19 @@ tabla(
     anchos=[1.8, 3.2, 11.0], tam=9, alineaciones=[CENTRO, IZQUIERDA, IZQUIERDA])
 
 h(2, "5.3 Estado inicial y conjunto de estados finales")
-parrafo("El estado inicial es **q0**, en el que el autómata no ha leído ningún símbolo. El conjunto "
-        "de estados finales contiene un único elemento, **F = {q18}**, al que solo se llega tras "
-        "procesar el sufijo exacto «.ni». Como toda transición desde q18 conduce a q19, la "
-        "aceptación exige que la cadena termine justo en ese estado: no existe aceptación parcial ni "
-        "prefijos aceptados.")
+parrafo("El estado inicial es **q0**, donde el autómata no ha leído nada. El conjunto de "
+        "aceptación tiene un solo elemento, **F = {q18}**, al que se llega únicamente después de "
+        "procesar el sufijo exacto «.ni». Y como toda transición desde q18 conduce a q19, la "
+        "aceptación exige que la cadena termine justo ahí: no existe aceptación parcial ni prefijos "
+        "aceptados.")
 
 h(2, "5.4 Función de transición (δ)")
-parrafo("La función **δ: Q × Σ → Q** es total: para cada uno de los 20 estados y cada uno de los 38 "
-        "símbolos existe exactamente un estado de destino, lo que da **760 transiciones**. La "
-        "matriz se construye en dos pasos: primero todas las celdas se inicializan en el sumidero "
-        "q19 y después se sobrescriben únicamente las transiciones definidas. Así, ninguna celda "
-        "queda indefinida y el autómata nunca se bloquea.")
+parrafo("La función **δ: Q × Σ → Q** es total: para cada uno de los 20 estados y cada uno de los "
+        "38 símbolos hay exactamente un destino. Eso da **760 transiciones**.")
+parrafo("La matriz se arma en dos pasos, y el truco es sencillo. Primero todas las celdas se llenan "
+        "con el sumidero q19; después se sobrescriben solo las transiciones que sí existen. Así "
+        "ninguna celda queda indefinida y el autómata nunca se bloquea. La Tabla 8 muestra cómo se "
+        "reparten esas transiciones estado por estado.")
 tabla(
     ["Estado de origen", "Transiciones definidas", "Hacia q19", "Total"],
     [
@@ -668,23 +697,22 @@ tabla(
     anchos=[3.4, 7.0, 3.0, 2.6], tam=9, color_total=True)
 
 h(2, "5.5 Propiedades del autómata")
-vineta("**Determinismo.** Cada celda de la matriz contiene un único estado de destino y no existen "
-       "transiciones ε; para todo par (q, s) hay exactamente un δ(q, s).")
+vineta("**Determinismo.** Cada celda guarda un único destino y no hay transiciones ε; para todo "
+       "par (q, s) existe exactamente un δ(q, s).")
 vineta("**Totalidad.** δ está definida en las 760 celdas, incluidas las de q19, que es un "
-       "auto-lazo con todos los símbolos del alfabeto.")
-vineta("**Sumidero absorbente.** Una vez en q19 no existe transición de salida; el rechazo es "
-       "inmediato y definitivo, lo que evita seguir procesando una cadena que ya no puede aceptarse.")
-vineta("**Aceptación estricta.** δ(q18, s) = q19 para todo s ∈ Σ, de modo que q18 solo es final si "
+       "auto-lazo con todos los símbolos.")
+vineta("**Sumidero absorbente.** Una vez en q19 no hay salida: el rechazo es inmediato y "
+       "definitivo, y el autómata deja de procesar una cadena que ya no puede aceptarse.")
+vineta("**Aceptación estricta.** δ(q18, s) = q19 para todo s ∈ Σ, así que q18 solo es final si "
        "la cadena termina allí.")
-vineta("**Lenguaje aceptado.** L(M) = { w ∈ Σ* : w = iniciales · número · «@uni.edu.ni», con entre "
-       "2 y 4 iniciales y entre 2 y 3 dígitos }.")
-vineta("**Complejidad.** El reconocimiento recorre la cadena una sola vez: tiempo O(n) y memoria "
-       "constante O(1), con n = |w|.")
+vineta("**Lenguaje aceptado.** L(M) = { w ∈ Σ* : w = iniciales · número · «@uni.edu.ni», con "
+       "entre 2 y 4 iniciales y entre 2 y 3 dígitos }.")
+vineta("**Complejidad.** Una sola pasada por la cadena: tiempo O(n) y memoria constante.")
 
 h(2, "5.6 Equivalencia de nomenclatura con la guía")
-parrafo("La guía del curso nombra al estado de error como **qE**. En la implementación se usa el "
-        "identificador **q19** para mantener una numeración continua de q0 a q19; la equivalencia "
-        "es exacta y se resume a continuación.")
+parrafo("Un detalle de nombres, para que no haya confusión: la guía llama **qE** al estado de "
+        "error. En el código usamos **q19**, simplemente para no romper la numeración de q0 a q19. La "
+        "equivalencia es exacta y está resumida en la Tabla 9.")
 tabla(
     ["Nomenclatura de la guía", "Nomenclatura del proyecto", "Observación"],
     [
@@ -704,10 +732,9 @@ tabla(
 h(1, "6. Diagrama de transición de estados y tabla de transiciones")
 
 h(2, "6.1 Tabla de transiciones: parte local")
-parrafo("En la parte local, δ depende únicamente de la **clase** del símbolo: cualquier letra de a "
-        "a z produce el mismo destino, e igual ocurre con cualquier dígito. La matriz agrupada "
-        "siguiente es, por tanto, una representación completa y sin pérdida de la función para los "
-        "estados q0 a q7 y para los estados terminales.")
+parrafo("En la parte local, δ depende solo de la **clase** del símbolo: cualquier letra de a a z "
+        "lleva al mismo destino, y lo mismo pasa con cualquier dígito. Por eso la matriz agrupada de "
+        "la Tabla 10 es una representación completa, sin pérdida, de lo que ocurre entre q0 y q7.")
 tabla(
     ["Estado", "L = {a … z}", "D = {0 … 9}", "@", "."],
     [
@@ -727,9 +754,9 @@ tabla(
     alineaciones=[CENTRO, CENTRO, CENTRO, CENTRO, CENTRO], primera_col_negrita=True)
 
 h(2, "6.2 Tabla de transiciones: parte del dominio")
-parrafo("En el dominio la situación cambia: cada estado espera un **carácter exacto**, no una clase "
-        "de símbolos. Por eso la tabla se presenta carácter por carácter; en todos estos estados "
-        "cualquier otro símbolo del alfabeto conduce a q19.")
+parrafo("En el dominio la cosa cambia: cada estado espera un **carácter exacto**, no una clase. "
+        "Por eso la tabla va carácter por carácter (Tabla 11). En todos estos estados, cualquier otro "
+        "símbolo del alfabeto conduce a q19.")
 tabla(
     ["Estado", "Símbolo leído hasta ahora", "Carácter esperado", "Destino"],
     [
@@ -747,17 +774,19 @@ tabla(
     titulo="Tabla 11. Transiciones del dominio: reconocimiento del sufijo @uni.edu.ni",
     anchos=[2.4, 6.0, 4.0, 3.0], tam=9,
     alineaciones=[CENTRO, CENTRO, CENTRO, CENTRO], primera_col_negrita=True)
-parrafo("La combinación de las tablas 10 y 11, junto con la regla «cualquier símbolo no listado "
-        "conduce a q19», define las 760 celdas de δ. La matriz completa, con una columna por cada "
-        "uno de los 38 símbolos, se incluye en el **Anexo D** y puede consultarse en el propio "
-        "programa con el botón **Tabla de transiciones δ**.", espacio_tras=10)
+parrafo("Con las tablas 10 y 11, más la regla «cualquier símbolo no listado va a q19», quedan "
+        "definidas las 760 celdas de δ. La matriz completa, con las 38 columnas, está en el "
+        "**Anexo D** y también se puede consultar dentro del programa, con el botón **Tabla de "
+        "transiciones δ**.")
 
 h(2, "6.3 Diagrama de transición de estados")
-parrafo("El diagrama se generó con el mismo renderizador que utiliza la aplicación, de modo que la "
-        "figura y lo que el usuario ve en pantalla son la misma representación. El trazado dispone "
-        "los estados en dos filas en serpentina (q0 a q9 arriba y q10 a q19 abajo) y dibuja 22 "
-        "aristas: 9 de la parte local, 10 del dominio, la arista de rechazo de q18 a q19 y las "
-        "transiciones agrupadas hacia el sumidero.")
+parrafo("El diagrama de la Figura 1 lo dibuja la propia aplicación con Java2D, así que lo que se "
+        "ve en la figura es exactamente lo que ve el usuario en pantalla. Los estados van en dos "
+        "filas en serpentina (q0 a q9 arriba, q10 a q19 abajo) y hay 22 aristas: las de la parte "
+        "local, las del dominio, la de rechazo desde q18 y las agrupadas hacia el sumidero.")
+parrafo("Las convenciones son las de siempre en teoría de autómatas: flecha entrante para el estado "
+        "inicial, doble círculo para el final y círculo punteado para el sumidero. La Tabla 12 las "
+        "resume.")
 figura(DOCS + "diagrama-afd.png",
        "Figura 1. Diagrama de transición de estados del AFD, dibujado por la aplicación con Java2D",
        ancho_cm=15.6)
@@ -775,10 +804,10 @@ tabla(
     anchos=[5.2, 10.8], tam=9)
 
 h(2, "6.4 Diagrama con la traza de una validación")
-parrafo("La aplicación resalta en naranja el camino recorrido por la última validación, tanto en los "
+parrafo("Además, la aplicación resalta en naranja el camino de la última validación, tanto en los "
         "estados como en las aristas, y marca en rojo el carácter que provocó el rechazo cuando lo "
-        "hay. La figura siguiente muestra el diagrama con la traza de **lmra123@uni.edu.ni**, una "
-        "cadena aceptada que ejercita los límites máximos de iniciales (4) y dígitos (3).")
+        "hay. La Figura 2 muestra esa traza sobre **lmra123@uni.edu.ni**, una cadena aceptada que usa "
+        "los límites máximos de iniciales (4) y dígitos (3).")
 figura(DOCS + "diagrama-traza.png",
        "Figura 2. El mismo diagrama con la traza de lmra123@uni.edu.ni resaltada en naranja",
        ancho_cm=15.6)
@@ -790,19 +819,18 @@ figura(DOCS + "diagrama-traza.png",
 h(1, "7. Pruebas y validación de cadenas")
 
 h(2, "7.1 Metodología de prueba")
-parrafo("La verificación se organizó en cuatro niveles complementarios, de modo que ningún aspecto "
-        "del autómata quedara sin evidencia:")
-numerada("**Trazas manuales**: ejecución paso a paso de cadenas representativas, registrando la "
+parrafo("Para que no quedara nada sin evidencia, la verificación se organizó en cuatro niveles.")
+numerada("**Trazas manuales**: ejecutar paso a paso cadenas representativas y anotar la "
          "secuencia completa de estados.")
-numerada("**Batería funcional**: 22 casos con veredicto esperado, que el programa ejecuta desde el "
-         "botón «Ejecutar pruebas» y contrasta automáticamente.")
-numerada("**Pruebas unitarias automatizadas**: 47 invocaciones con JUnit 5 sobre el autómata, el "
-         "dibujo del diagrama y el banco de casos.")
+numerada("**Batería funcional**: 22 casos con veredicto esperado, que el programa ejecuta desde "
+         "el botón «Ejecutar pruebas» y compara solo.")
+numerada("**Pruebas unitarias automatizadas**: 47 invocaciones con JUnit 5 sobre el autómata, "
+         "el diagrama y el banco de casos.")
 numerada("**Verificación cruzada**: 2 000 cadenas aleatorias comparadas contra la expresión regular "
          "equivalente ^[a-z]{2,4}[0-9]{2,3}@uni\\.edu\\.ni$, usada solo como referencia externa.")
 
 h(2, "7.2 Trazas de cadenas válidas")
-parrafo("Las cinco cadenas siguientes son aceptadas. Observe que todas terminan en q18 y que el "
+parrafo("Estas cinco cadenas son aceptadas. Todas terminan en q18 y, como era de esperar, el "
         "número de transiciones es siempre igual a la longitud de la cadena.")
 tabla(
     ["Cadena", "Secuencia de estados", "Trans.", "Resultado", "¿Esperado?"],
@@ -828,9 +856,9 @@ tabla(
     alineaciones=[IZQUIERDA, IZQUIERDA, CENTRO, CENTRO, CENTRO])
 
 h(2, "7.3 Trazas de cadenas inválidas")
-parrafo("Las cinco cadenas siguientes son rechazadas. En todos los casos el autómata identifica la "
-        "posición exacta del fallo y clasifica el motivo, información que la interfaz muestra en la "
-        "columna de traza y en la alerta modal.")
+parrafo("Estas cinco son rechazadas. En todos los casos el autómata identifica la posición "
+        "exacta del fallo y clasifica el motivo, que es justo lo que la interfaz muestra en la "
+        "columna de traza y en la alerta.")
 tabla(
     ["Cadena", "Secuencia de estados", "Tipo de rechazo", "Resultado", "¿Esperado?"],
     [
@@ -851,10 +879,9 @@ tabla(
     alineaciones=[IZQUIERDA, IZQUIERDA, IZQUIERDA, CENTRO, CENTRO])
 
 h(2, "7.4 Batería completa de 22 casos")
-parrafo("La batería cubre los cuatro límites de longitud, los tres errores de dominio más frecuentes, "
-        "las mayúsculas, los espacios, los caracteres extra y las entradas degeneradas. La columna "
-        "«¿Esperado?» compara el veredicto del autómata con el veredicto declarado en el archivo de "
-        "casos.")
+parrafo("La batería cubre los cuatro límites de longitud, los errores de dominio más frecuentes, "
+        "las mayúsculas, los espacios, los caracteres extra y las entradas degeneradas. La última "
+        "columna compara el veredicto del autómata con el que declara el archivo de casos.")
 tabla(
     ["#", "Cadena", "Tipo de resultado", "Veredicto", "¿Esperado?"],
     [
@@ -886,17 +913,16 @@ tabla(
     alineaciones=[CENTRO, IZQUIERDA, IZQUIERDA, CENTRO, CENTRO])
 
 h(2, "7.5 Resultados de la ejecución automatizada")
-parrafo("La ejecución completa del programa sobre la batería produce **22/22 casos esperados "
-        "correctos**, tal como muestra la figura siguiente: la tabla registra cada caso con su tipo "
-        "de resultado y el veredicto obtenido.")
+parrafo("Al ejecutar la batería completa, el programa reporta **22/22 casos esperados "
+        "correctos**. La Figura 3 lo muestra: cada caso queda registrado con su tipo de resultado y "
+        "su veredicto.")
 figura(DOCS + "captura-bateria.png",
        "Figura 3. Ejecución de la batería de 22 casos desde la interfaz del programa",
        ancho_cm=15.6)
-parrafo("Las pruebas automatizadas confirman los mismos resultados y añaden la verificación "
-        "estructural del autómata: **47 de 47 invocaciones correctas**, distribuidas en 39 pruebas "
-        "del autómata (que incluyen las 760 celdas de δ, el comportamiento absorbente de q18 y q19 y "
-        "las 2 000 cadenas aleatorias), 5 pruebas del dibujo del diagrama y 3 pruebas del banco de "
-        "casos. La compilación de las 18 clases con la opción `-Xlint:all` de Java 17 no produce "
+parrafo("Las pruebas automatizadas confirman lo mismo y añaden la parte estructural: "
+        "**47 de 47 invocaciones correctas**, repartidas en 39 pruebas del autómata (que incluyen las "
+        "760 celdas de δ, la absorción de q18 y q19 y las 2 000 cadenas aleatorias), 5 del dibujo del "
+        "diagrama y 3 del banco de casos. La compilación de las 18 clases con -Xlint:all no produce "
         "ni errores ni advertencias.")
 
 h(2, "7.6 Análisis de casos límite")
@@ -921,18 +947,17 @@ tabla(
     anchos=[4.2, 4.6, 7.2], tam=8.5)
 
 h(2, "7.7 Discusión de los resultados")
-parrafo("Los resultados muestran tres propiedades que conviene destacar. Primera, el autómata "
-        "**detecta el error lo antes posible**: en Js25@unicomp.edu el rechazo ocurre en la "
-        "posición 0, sin necesidad de procesar el resto de la cadena, gracias a que q19 es "
-        "absorbente. Segunda, la clasificación del rechazo es **consecuencia del diseño**, no de una "
-        "lista de condiciones: el tipo se deduce del estado de origen de la transición fallida, por "
-        "lo que añadir un caso nuevo no obliga a reescribir la lógica de diagnóstico. Tercera, la "
+parrafo("Hay tres cosas que vale la pena resaltar de los resultados. Primero, el autómata "
+        "**detecta el error lo antes posible**: en Js25@unicomp.edu el rechazo ocurre en la posición "
+        "0, sin procesar el resto de la cadena, porque q19 absorbe todo. Segundo, la clasificación "
+        "del rechazo sale del diseño y no de una lista de condiciones: el tipo se deduce del estado "
+        "de origen, así que agregar casos nuevos no obliga a reescribir el diagnóstico. Tercero, la "
         "coincidencia con la expresión regular en 2 000 cadenas aleatorias confirma que el lenguaje "
-        "aceptado es exactamente el especificado, sin aceptar de más ni de menos.")
-parrafo("La única diferencia relevante frente al enunciado se documentó como decisión de diseño: una "
-        "mayúscula al final de la cadena se clasifica como símbolo no permitido y no como caracteres "
-        "extra, porque no pertenece al alfabeto. Esta interpretación es más estricta y consistente "
-        "con la definición de Σ, y está cubierta por las pruebas 9, 10 y 20 de la batería.")
+        "aceptado es exactamente el especificado, ni más ni menos.")
+parrafo("La única diferencia frente al enunciado quedó documentada como decisión de diseño: una "
+        "mayúscula al final se clasifica como símbolo no permitido y no como caracteres extra, porque "
+        "no pertenece al alfabeto. Es la lectura más estricta y consistente con la definición de Σ, y "
+        "está cubierta por las pruebas 9, 10 y 20 de la batería.")
 
 # --------------------------------------------------------------------------
 # 8. CONCLUSIONES Y RECOMENDACIONES
@@ -941,45 +966,43 @@ parrafo("La única diferencia relevante frente al enunciado se documentó como d
 h(1, "8. Conclusiones y recomendaciones")
 
 h(2, "8.1 Conclusiones")
-parrafo("El autómata diseñado reconoce exactamente el lenguaje institucional: acepta toda cadena de "
-        "la forma <iniciales><número>@uni.edu.ni con entre 2 y 4 iniciales y entre 2 y 3 dígitos, y "
-        "rechaza cualquier otra. La correspondencia con la expresión regular equivalente, verificada "
-        "sobre 2 000 cadenas aleatorias, confirma que el modelo no acepta de más ni de menos.")
-parrafo("La función de transición es **total y determinista**: las 760 celdas de la matriz tienen un "
-        "único destino y no existen transiciones indefinidas ni transiciones ε. Esa propiedad es la "
-        "que garantiza que, para cada par (estado, símbolo), exista una sola respuesta posible y que "
-        "la validación se realice sin ambigüedades, condición indispensable en un sistema "
-        "universitario donde dos validadores distintos no pueden dar veredictos diferentes.")
-parrafo("El estado sumidero q19 aporta dos beneficios concretos. Por un lado, hace que el rechazo "
-        "sea **inmediato e irreversible**, de modo que el autómata no continúa procesando una cadena "
-        "que ya no puede aceptarse. Por otro, permite **explicar el error con precisión**: como el "
-        "tipo de rechazo se deduce del estado de origen de la transición fallida, el programa indica "
-        "la posición exacta y la causa, en lugar de devolver un simple «formato inválido».")
-parrafo("La aceptación es estricta al final de la cadena, porque toda transición desde q18 conduce a "
-        "q19. Esto evita un error frecuente en validadores caseros: aceptar un prefijo correcto y "
-        "pasar por alto caracteres adicionales, como ocurre con js25@uni.edu.ni.mx.")
-parrafo("La verificación fue exhaustiva y reproducible: **22/22** casos de la batería funcional, "
-        "**47/47** pruebas automatizadas y compilación sin advertencias con `-Xlint:all`. El modelo "
-        "matemático, el código y el diagrama se mantienen sincronizados porque el diagrama se dibuja "
-        "en pantalla a partir de la misma matriz que valida las cadenas.")
+parrafo("El autómata reconoce exactamente el lenguaje institucional. Acepta toda cadena de la "
+        "forma <iniciales><número>@uni.edu.ni con entre 2 y 4 iniciales y entre 2 y 3 dígitos, y "
+        "rechaza cualquier otra. La comparación con la expresión regular sobre 2 000 cadenas "
+        "aleatorias confirma que no acepta de más ni de menos.")
+parrafo("La función de transición es **total y determinista**: las 760 celdas tienen un único "
+        "destino y no hay transiciones indefinidas ni ε. Esa propiedad es la que garantiza que, para "
+        "cada par (estado, símbolo), exista una sola respuesta posible; en un sistema universitario, "
+        "dos validadores distintos no pueden dar veredictos diferentes.")
+parrafo("El sumidero q19 trae dos beneficios concretos. Hace que el rechazo sea **inmediato e "
+        "irreversible**, así que el autómata no sigue procesando una cadena perdida; y permite "
+        "**explicar el error**: como el tipo de rechazo se deduce del estado de origen, el programa "
+        "indica la posición y la causa en lugar de un simple «formato inválido».")
+parrafo("La aceptación es estricta al final, porque toda transición desde q18 va a q19. Eso "
+        "evita un error clásico de los validadores caseros: aceptar un prefijo correcto y pasar por "
+        "alto lo que viene después, como en js25@uni.edu.ni.mx.")
+parrafo("Y la verificación quedó completa y reproducible: **22/22** casos de la batería, "
+        "**47/47** pruebas automatizadas y compilación sin advertencias con -Xlint:all. El modelo, el "
+        "código y el diagrama se mantienen sincronizados porque el diagrama se dibuja con la misma "
+        "matriz que valida.")
 
 h(2, "8.2 Recomendaciones")
-numerada("**Ampliar el lenguaje a subdominios institucionales**, como @doc.uni.edu.ni para docentes o "
-         "@est.uni.edu.ni para estudiantes. La extensión es natural: basta añadir estados para el "
-         "nuevo sufijo manteniendo el resto de la matriz.")
-numerada("**Integrar el validador con los servicios institucionales** (directorio, API de registro) "
-         "para comprobar no solo el formato, sino también la existencia y disponibilidad de la "
-         "cuenta antes de crearla.")
-numerada("**Ofrecer el validador como servicio**: un pequeño servicio web REST o una biblioteca "
-         "reutilizable permitiría que la plataforma virtual, el sistema de biblioteca y las "
-         "aplicaciones internas compartan exactamente la misma regla de validación.")
-numerada("**Añadir una normalización opcional y explícita** (por ejemplo, eliminar espacios "
-         "accidentales o aplicar Unicode NFC) como un paso previo configurable y registrado, sin "
-         "alterar el autómata, que debe seguir siendo estricto.")
-numerada("**Automatizar la integración continua**: ejecutar `mvn test` en cada cambio, ampliar la "
+numerada("**Ampliar el lenguaje a subdominios institucionales**, como @doc.uni.edu.ni para "
+         "docentes o @est.uni.edu.ni para estudiantes. La extensión es natural: se agregan estados "
+         "para el nuevo sufijo y el resto de la matriz no se toca.")
+numerada("**Integrar el validador con los servicios institucionales** (directorio, API de "
+         "registro) para comprobar no solo el formato, sino también si la cuenta existe y está "
+         "disponible.")
+numerada("**Ofrecerlo como servicio**: un pequeño servicio web o una biblioteca reutilizable "
+         "permitiría que la plataforma virtual, la biblioteca y las aplicaciones internas compartan "
+         "la misma regla de validación.")
+numerada("**Añadir una normalización opcional y explícita** (quitar espacios accidentales, "
+         "aplicar Unicode NFC) como paso previo configurable y registrado, sin tocar el autómata, que "
+         "debe seguir siendo estricto.")
+numerada("**Automatizar la integración continua**: correr mvn test en cada cambio, ampliar la "
          "batería con casos generados y medir el rendimiento con cadenas de longitud extrema.")
-numerada("**Internacionalizar los mensajes** de la interfaz y exportar la traza a CSV o PDF para "
-         "facilitar la auditoría de los registros rechazados.")
+numerada("**Internacionalizar los mensajes** de la interfaz y exportar la traza a CSV o PDF, "
+         "para facilitar la auditoría de los registros rechazados.")
 
 # --------------------------------------------------------------------------
 # 9. REFERENCIAS
@@ -1026,11 +1049,11 @@ referencia([("Universidad Nacional de Ingeniería. (2026). ", False),
 h(1, "10. Anexos: interfaces de usuario del programa")
 
 h(2, "Anexo A. Diseño de la interfaz")
-parrafo("La interfaz se construyó con Swing y se organiza en tres zonas: la cabecera institucional, el "
-        "panel de validación (campo de entrada, botón y veredicto) y el panel de traza (tabla con el "
-        "historial de validaciones). El pie de la ventana abre el diagrama del autómata y la tabla de "
-        "transiciones, y muestra la barra de estado con los datos del modelo. El diseño busca que el "
-        "usuario vea en un solo vistazo el veredicto, el motivo y el camino recorrido por el autómata.")
+parrafo("La interfaz se hizo con Swing y se organiza en tres zonas: la cabecera institucional, el "
+        "panel de validación (campo, botón y veredicto) y el panel de traza con el historial. En el "
+        "pie están los botones que abren el diagrama y la tabla de transiciones, más la barra de "
+        "estado con los datos del modelo. La idea es simple: que el usuario vea de un vistazo el "
+        "veredicto, el motivo y el camino que siguió el autómata.")
 tabla(
     ["Componente", "Tipo", "Función"],
     [
@@ -1053,9 +1076,9 @@ figura(DOCS + "captura-interfaz.png",
        ancho_cm=15.6)
 
 h(2, "Anexo B. Capturas de pantalla del sistema en ejecución")
-parrafo("Las capturas se obtuvieron ejecutando la aplicación. La alerta modal aparece sobre la ventana "
-        "principal y se cierra con el botón «Aceptar»; su texto se transcribe bajo cada figura para "
-        "dejar constancia exacta del mensaje que recibe el usuario.")
+parrafo("Las capturas salieron de ejecutar la aplicación. La alerta modal aparece encima de la "
+        "ventana principal y se cierra con «Aceptar»; debajo de cada figura transcribimos su texto "
+        "exacto, para que quede constancia del mensaje que recibe el usuario.")
 
 parrafo("**Figura B.1 — Validación exitosa de una cadena válida.**", tam=12, espacio_tras=2,
         alineacion=IZQUIERDA)
@@ -1091,10 +1114,10 @@ codigo([
 ], tam=9)
 
 h(2, "Anexo C. Extracto del código fuente (lógica del AFD)")
-parrafo("El código se organiza en tres paquetes: **modelo** (autómata y datos), **vista** (interfaz) y "
-        "**controlador** (conexión entre ambos). Los fragmentos siguientes pertenecen al modelo y "
-        "muestran la matriz de transición y el bucle de validación. El código completo, con "
-        "documentación y pruebas, se entrega junto con este informe.")
+parrafo("El código está en tres paquetes: **modelo** (autómata y datos), **vista** (interfaz) y "
+        "**controlador** (el puente entre los dos). Los fragmentos que siguen son del modelo y "
+        "muestran la matriz de transición y el bucle de validación. El resto, con su documentación y "
+        "sus pruebas, va adjunto con el informe.")
 
 parrafo("**C.1 Construcción de la matriz δ (Delta.java).**", alineacion=IZQUIERDA, espacio_tras=2)
 codigo([
@@ -1201,11 +1224,11 @@ seccion_horizontal = doc.add_section(WD_SECTION.NEW_PAGE)
 configurar_pagina(seccion_horizontal, horizontal=True)
 
 h(2, "Anexo D. Matriz completa de transición δ (20 × 38 = 760 celdas)")
-parrafo("La matriz siguiente reproduce, celda por celda, la función de transición implementada en el "
-        "programa. La fila indica el estado de origen y la columna el símbolo leído; el valor de cada "
-        "celda es el estado de destino. Las celdas sombreadas en azul son transiciones definidas y "
-        "las celdas grises conducen al sumidero q19. La misma matriz se puede consultar dentro de la "
-        "aplicación, en la ventana «Tabla de transiciones δ».", tam=10, espacio_tras=6)
+parrafo("La matriz siguiente reproduce, celda por celda, la función que está implementada en el "
+        "programa. La fila es el estado de origen, la columna el símbolo leído y el valor de la celda "
+        "el estado de destino. Las celdas azules son transiciones definidas; las grises van al "
+        "sumidero q19. La misma matriz se puede consultar dentro de la aplicación, en la ventana "
+        "«Tabla de transiciones δ».", tam=10, espacio_tras=6)
 
 
 def tabla_matriz(simbolos_encabezado, filas_matriz):
