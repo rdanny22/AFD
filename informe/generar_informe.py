@@ -375,62 +375,62 @@ doc.add_page_break()
 h(1, "2. Introducción")
 
 h(2, "2.1 Contexto institucional")
-parrafo("Piense en la escena. Un estudiante nuevo llega a la ventanilla, llena el formulario y "
-        "escribe su correo: quiere entrar a la plataforma virtual, sacar un libro de la biblioteca "
-        "digital, conectarse a la red interna. Todo eso depende de una sola cosa: que la dirección "
-        "esté bien escrita.")
-parrafo("Porque en la UNI el correo @uni.edu.ni es la llave. No un adorno en el carné, no un dato "
-        "más en la ficha: la llave.")
-parrafo("Y las llaves se copian mal. Todo el tiempo.")
-parrafo("A todos nos ha pasado, o le hemos visto pasar al compañero de al lado. Escribir "
-        "**Js25@uni.edu.ni** con la mayúscula del principio, porque así empieza el apellido. Poner un "
-        "dígito de más, porque el número de carné se quedó dando vueltas en la cabeza. Teclear "
-        "**@uni.edu** y olvidar el **.ni**; total, ¿quién se acuerda de eso?")
-parrafo("Y luego están los errores que no se ven. Un espacio al final, de esos que el ojo no detecta "
-        "pero el sistema sí. Un @gmail.com colado en medio del registro, porque el formulario nunca "
-        "dijo que no.")
-parrafo("El final de la historia casi siempre es el mismo: la cuenta no autentica, el usuario "
-        "queda duplicado en la base de datos o —peor— alguien se hace pasar por otra persona. Y ahí "
-        "empieza el viacrucis: correos con soporte, una cola en la oficina de TI, un trámite que se "
-        "pudo evitar.")
-parrafo("Validar el formato, en cambio, toma milisegundos.")
-parrafo("Y no al final del proceso, sino **en el momento en que el usuario escribe**. Ahí es donde "
-        "este proyecto pone el foco.")
+parrafo("En la UNI, el correo @uni.edu.ni no es un adorno en la portada del carné: es la llave. "
+        "Con esa dirección entras a la plataforma virtual, pides libros en la biblioteca digital, "
+        "te conectas a la red interna y hasta firmas trámites. Es, en la práctica, tu identidad "
+        "digital dentro de la universidad.")
+parrafo("Y como toda llave, se puede copiar mal.")
+parrafo("Todos hemos visto el caso: alguien escribe **Js25@uni.edu.ni** con la mayúscula del "
+        "principio, o pone un dígito de más porque el número de carné se le quedó en la cabeza, o "
+        "teclea **@uni.edu** y se olvida del **.ni**. A veces el error es invisible: un espacio al "
+        "final, de esos que no se ven ni con la mejor de las vistas. Y de vez en cuando aparece un "
+        "**@gmail.com** en medio del registro, porque el formulario nunca dijo nada.")
+parrafo("El resultado siempre es el mismo: una cuenta que no autentica, un usuario duplicado en la "
+        "base de datos o, lo más delicado, una puerta abierta para que alguien se haga pasar por otra "
+        "persona. Corregir eso después cuesta mucho más que evitarlo al inicio: validar el formato "
+        "toma milisegundos, mientras que arreglar una cuenta mal creada puede costar una cola en la "
+        "oficina de TI.")
+parrafo("Por eso tiene sentido un validador automático. Y tiene más sentido todavía si corre "
+        "**mientras el usuario escribe**, no dos días después.")
 
 h(2, "2.2 Justificación teórica")
-parrafo("Ahora, lo interesante: el formato de un correo institucional no es un capricho "
-        "administrativo. Es un **lenguaje regular**. Y para los lenguajes regulares hay una "
-        "herramienta matemática que cae como anillo al dedo: el **autómata finito determinista**.")
-parrafo("Un AFD no tiene misterio: es una quinta tupla, **M = (Q, Σ, δ, q0, F)**. Estados, "
-        "alfabeto, transiciones, un punto de partida y los estados donde la cadena se acepta. Con eso "
-        "se describe, con precisión quirúrgica, qué cadenas pertenecen al lenguaje y cuáles no "
-        "(Hopcroft et al., 2007).")
-parrafo("¿Y por qué no una expresión regular y ya? Se puede. Nosotros mismos usamos una… pero solo "
-        "en las pruebas, como quien revisa la respuesta con una calculadora. En el validador real nos "
-        "quedamos con el autómata. Tres razones:")
-parrafo("**Determinismo.** Para cada par (estado, símbolo) hay una sola transición. No hay "
-        "ambigüedad, no hay que retroceder, no hay dos caminos. Dos personas validan el mismo correo y "
-        "obtienen el mismo veredicto. Siempre.")
-parrafo("**Costo.** El autómata lee la cadena una vez y la olvida: tiempo O(n), memoria "
-        "constante. Da igual si el correo tiene diez caracteres o sesenta.")
-parrafo("**Trazabilidad.** Y esta es la que más nos gustó. Una expresión regular contesta «no "
-        "coincide» y se calla. El autómata, en cambio, sabe dónde estaba parado: puede decir que en la "
-        "posición 5 apareció una 'U' mayúscula y que esa letra no está en Σ. En un sistema "
-        "institucional, esa diferencia —«está mal» contra «está mal por esto»— vale oro.")
-parrafo("Un último aprendizaje del camino: conviene separar la lógica del autómata de la "
-        "interfaz. El modelo no tiene por qué saber que existe una ventana. Con el patrón "
-        "Modelo–Vista–Controlador (Gamma et al., 1994), **modelo** valida, **vista** dibuja y el "
-        "**controlador** los conecta. Gracias a eso probamos el AFD sin abrir una sola ventana, y el "
-        "diagrama que se ve en pantalla sale de la misma matriz que valida las cadenas.")
+parrafo("Pues bien: el formato de un correo institucional no es un capricho administrativo, es un "
+        "**lenguaje regular**. Y para los lenguajes regulares existe una herramienta matemática "
+        "precisa: el **autómata finito determinista**.")
+parrafo("Un AFD es una quinta tupla, **M = (Q, Σ, δ, q0, F)**: un conjunto finito de estados, un "
+        "alfabeto, una función de transición que siempre sabe a dónde ir, un estado inicial y un "
+        "conjunto de estados de aceptación. Nada más. Con eso se describe exactamente qué cadenas "
+        "pertenecen al lenguaje y cuáles no (Hopcroft et al., 2007).")
+parrafo("La pregunta obligada: ¿y por qué no usar simplemente una expresión regular? Se puede, "
+        "claro. Nosotros mismos la usamos… pero solo en las pruebas, como quien revisa la respuesta "
+        "con una calculadora. En el validador real nos quedamos con el autómata por tres razones "
+        "concretas.")
+parrafo("La primera es el **determinismo**. Para cada par (estado, símbolo) hay una y solo una "
+        "transición: no hay ambigüedad, no hay que retroceder, no hay dos caminos posibles. Si dos "
+        "personas validan el mismo correo, obtienen el mismo veredicto. Siempre.")
+parrafo("La segunda es el **costo**. El autómata lee la cadena una vez, de izquierda a derecha, y "
+        "nada más: tiempo O(n) y memoria constante, sin importar si el correo tiene diez caracteres "
+        "o sesenta.")
+parrafo("La tercera —y para nosotros la más valiosa— es la **trazabilidad**. Una expresión regular "
+        "responde «no coincide» y se queda callada. El autómata, en cambio, sabe en qué estado estaba "
+        "cuando algo salió mal, así que puede decir: la posición 5 tiene una 'U' mayúscula, y esa "
+        "letra no está en Σ. En un sistema institucional, la diferencia entre «está mal» y «está mal "
+        "por esto» vale oro.")
+parrafo("Ah, y algo que aprendimos en el camino: conviene separar la lógica del autómata de la "
+        "interfaz. El modelo no debería saber que existe una ventana. Con el patrón "
+        "Modelo–Vista–Controlador (Gamma et al., 1994), el paquete **modelo** valida, el paquete "
+        "**vista** dibuja y el **controlador** los conecta. Gracias a eso pudimos probar el AFD sin "
+        "abrir una sola ventana, y dibujar el diagrama en pantalla con la misma matriz que valida "
+        "las cadenas.")
 
 h(2, "2.3 Alcance del trabajo")
-parrafo("Aclaramos los límites, para que no haya sorpresas: el programa valida **formato**, no "
-        "existencia. No consulta el directorio institucional ni pregunta si la cuenta ya está creada. "
-        "Eso es otra conversación, para una integración posterior.")
-parrafo("Lo que sí entrega: una aplicación de escritorio en **Java 17 con Swing** que valida "
-        "cadenas, muestra la traza completa de estados, dibuja el AFD en pantalla y ejecuta una "
-        "batería de 22 casos de prueba. Con su código, su documentación y sus pruebas automatizadas. "
-        "El detalle de todo esto viene en las secciones que siguen.")
+parrafo("Vale la pena aclarar los límites. El programa valida **formato**, no existencia: no "
+        "consulta el directorio institucional ni pregunta si la cuenta ya está creada. Eso queda "
+        "para una integración posterior.")
+parrafo("Lo que sí entrega el proyecto es una aplicación de escritorio en **Java 17 con Swing**, que "
+        "valida cadenas, muestra la traza completa de estados, dibuja el AFD en pantalla y ejecuta "
+        "una batería de 22 casos de prueba, con su código, su documentación y sus pruebas "
+        "automatizadas.")
 
 # --------------------------------------------------------------------------
 # 3. OBJETIVOS
@@ -966,30 +966,25 @@ parrafo("La única diferencia frente al enunciado quedó documentada como decisi
 h(1, "8. Conclusiones y recomendaciones")
 
 h(2, "8.1 Conclusiones")
-parrafo("El autómata reconoce exactamente el lenguaje institucional definido en la sección 4. "
-        "Acepta toda cadena de la forma <iniciales><número>@uni.edu.ni con entre 2 y 4 iniciales y "
-        "entre 2 y 3 dígitos, y rechaza las demás. La comparación con la expresión regular equivalente "
-        "sobre 2 000 cadenas aleatorias permite afirmar que el lenguaje aceptado coincide con el "
-        "especificado, sin admitir cadenas de más ni de menos.")
-parrafo("La función de transición es total y determinista: las 760 celdas de la matriz tienen un "
-        "único destino y no existen transiciones indefinidas ni transiciones ε. De esta propiedad se "
-        "deriva que, para cada par (estado, símbolo), el autómata produce una sola respuesta posible. "
-        "En un sistema institucional, esa unicidad es la condición que impide que dos validadores "
-        "emitan veredictos distintos para una misma entrada.")
-parrafo("El estado sumidero q19 cumple dos funciones dentro del diseño. Por una parte, garantiza "
-        "que el rechazo sea inmediato e irreversible, de modo que el procesamiento se detiene en "
-        "cuanto la cadena deja de poder aceptarse. Por otra, permite clasificar el motivo del rechazo "
-        "a partir del estado de origen de la transición fallida, lo que se traduce en mensajes con la "
-        "posición exacta del error, en lugar de una indicación genérica de formato inválido.")
-parrafo("La aceptación se define de manera estricta al final de la cadena, puesto que toda "
-        "transición desde q18 conduce a q19. Con ello se evita una deficiencia frecuente en "
-        "validadores elementales: aceptar un prefijo correcto sin advertir los símbolos posteriores, "
-        "como ocurre en js25@uni.edu.ni.mx.")
-parrafo("La verificación realizada respalda estas conclusiones: se obtuvieron 22/22 casos "
-        "correctos en la batería funcional, 47/47 invocaciones correctas en las pruebas automatizadas "
-        "y compilación sin advertencias con -Xlint:all. Asimismo, el modelo, la implementación y el "
-        "diagrama permanecen consistentes, dado que el diagrama se genera a partir de la misma matriz "
-        "que valida las cadenas.")
+parrafo("El autómata reconoce exactamente el lenguaje institucional. Acepta toda cadena de la "
+        "forma <iniciales><número>@uni.edu.ni con entre 2 y 4 iniciales y entre 2 y 3 dígitos, y "
+        "rechaza cualquier otra. La comparación con la expresión regular sobre 2 000 cadenas "
+        "aleatorias confirma que no acepta de más ni de menos.")
+parrafo("La función de transición es **total y determinista**: las 760 celdas tienen un único "
+        "destino y no hay transiciones indefinidas ni ε. Esa propiedad es la que garantiza que, para "
+        "cada par (estado, símbolo), exista una sola respuesta posible; en un sistema universitario, "
+        "dos validadores distintos no pueden dar veredictos diferentes.")
+parrafo("El sumidero q19 trae dos beneficios concretos. Hace que el rechazo sea **inmediato e "
+        "irreversible**, así que el autómata no sigue procesando una cadena perdida; y permite "
+        "**explicar el error**: como el tipo de rechazo se deduce del estado de origen, el programa "
+        "indica la posición y la causa en lugar de un simple «formato inválido».")
+parrafo("La aceptación es estricta al final, porque toda transición desde q18 va a q19. Eso "
+        "evita un error clásico de los validadores caseros: aceptar un prefijo correcto y pasar por "
+        "alto lo que viene después, como en js25@uni.edu.ni.mx.")
+parrafo("Y la verificación quedó completa y reproducible: **22/22** casos de la batería, "
+        "**47/47** pruebas automatizadas y compilación sin advertencias con -Xlint:all. El modelo, el "
+        "código y el diagrama se mantienen sincronizados porque el diagrama se dibuja con la misma "
+        "matriz que valida.")
 
 h(2, "8.2 Recomendaciones")
 numerada("**Ampliar el lenguaje a subdominios institucionales**, como @doc.uni.edu.ni para "
