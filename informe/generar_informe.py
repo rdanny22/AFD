@@ -338,9 +338,9 @@ parrafo("Diseño e Implementación de un Autómata Finito Determinista (AFD) par
         espacio_tras=8)
 parrafo("Informe técnico del proyecto final", tam=12, cursiva=True, alineacion=CENTRO, espacio_tras=30)
 
-parrafo("Integrantes del equipo", tam=12, negrita=True, alineacion=CENTRO, espacio_tras=6)
+parrafo("Autor", tam=12, negrita=True, alineacion=CENTRO, espacio_tras=6)
 tabla(["Nombre completo", "Número de carné", "Grupo académico"],
-      [["", "", ""], ["", "", ""], ["", "", ""]],
+      [["", "", ""]],
       anchos=[7.6, 4.2, 3.2], tam=11, alineaciones=[CENTRO, CENTRO, CENTRO])
 
 parrafo("", espacio_tras=6)
@@ -402,8 +402,8 @@ parrafo("Un AFD es una quinta tupla, **M = (Q, Σ, δ, q0, F)**: un conjunto fin
         "conjunto de estados de aceptación. Nada más. Con eso se describe exactamente qué cadenas "
         "pertenecen al lenguaje y cuáles no (Hopcroft et al., 2007).")
 parrafo("La pregunta obligada: ¿y por qué no usar simplemente una expresión regular? Se puede, "
-        "claro. Nosotros mismos la usamos… pero solo en las pruebas, como quien revisa la respuesta "
-        "con una calculadora. En el validador real nos quedamos con el autómata por tres razones "
+        "claro. Yo mismo la usé… pero solo en las pruebas, como quien revisa la respuesta "
+        "con una calculadora. En el validador real me quedé con el autómata por tres razones "
         "concretas.")
 parrafo("La primera es el **determinismo**. Para cada par (estado, símbolo) hay una y solo una "
         "transición: no hay ambigüedad, no hay que retroceder, no hay dos caminos posibles. Si dos "
@@ -411,15 +411,15 @@ parrafo("La primera es el **determinismo**. Para cada par (estado, símbolo) hay
 parrafo("La segunda es el **costo**. El autómata lee la cadena una vez, de izquierda a derecha, y "
         "nada más: tiempo O(n) y memoria constante, sin importar si el correo tiene diez caracteres "
         "o sesenta.")
-parrafo("La tercera —y para nosotros la más valiosa— es la **trazabilidad**. Una expresión regular "
+parrafo("La tercera —y para mí la más valiosa— es la **trazabilidad**. Una expresión regular "
         "responde «no coincide» y se queda callada. El autómata, en cambio, sabe en qué estado estaba "
         "cuando algo salió mal, así que puede decir: la posición 5 tiene una 'U' mayúscula, y esa "
         "letra no está en Σ. En un sistema institucional, la diferencia entre «está mal» y «está mal "
         "por esto» vale oro.")
-parrafo("Ah, y algo que aprendimos en el camino: conviene separar la lógica del autómata de la "
+parrafo("Ah, y algo que aprendí en el camino: conviene separar la lógica del autómata de la "
         "interfaz. El modelo no debería saber que existe una ventana. Con el patrón "
         "Modelo–Vista–Controlador (Gamma et al., 1994), el paquete **modelo** valida, el paquete "
-        "**vista** dibuja y el **controlador** los conecta. Gracias a eso pudimos probar el AFD sin "
+        "**vista** dibuja y el **controlador** los conecta. Gracias a eso pude probar el AFD sin "
         "abrir una sola ventana, y dibujar el diagrama en pantalla con la misma matriz que valida "
         "las cadenas.")
 
@@ -466,7 +466,7 @@ numerada("Dejar documentadas las decisiones y las ambigüedades del enunciado, d
 h(1, "4. Descripción y reglas del problema")
 
 h(2, "4.1 Estructura del correo institucional")
-parrafo("Tomemos un ejemplo y desarmémoslo: **js25@uni.edu.ni**.")
+parrafo("Tomo un ejemplo y lo desarmo: **js25@uni.edu.ni**.")
 parrafo("Las iniciales son js: van en minúscula y deben ser entre dos y cuatro. El número es 25: dos "
         "o tres dígitos, ni uno más ni uno menos. Y @uni.edu.ni es el dominio, fijo, exacto, sin "
         "variaciones.")
@@ -476,7 +476,7 @@ codigo([
     "<iniciales>  ::= [a-z] [a-z] [a-z]? [a-z]?         (2 a 4 letras)",
     "<numero>     ::= [0-9] [0-9] [0-9]?                (2 a 3 dígitos)",
 ])
-parrafo("¿Y si nos equivocamos? Ahí es donde el autómata gana su sueldo. En **Js25@unicomp.edu** "
+parrafo("¿Y si me equivoco? Ahí es donde el autómata gana su sueldo. En **Js25@unicomp.edu** "
         "sobra una mayúscula que no debería estar; **j@unicomp.edu** se quedó sin número; "
         "**js25@unicom.edu** escribió mal el dominio; y **abc123@gmail.com** ni siquiera es de la "
         "UNI. Cuatro errores distintos, cuatro explicaciones distintas.")
@@ -485,11 +485,11 @@ h(2, "4.2 Reglas formales de sintaxis")
 parrafo("Las reglas se aplican todas a la vez, sin excepciones ni «pero este caso sí». Van "
         "resumidas en la Tabla 1, aunque conviene decirlo con palabras: iniciales de 2 a 4 letras "
         "minúsculas, número de 2 a 3 dígitos, una sola arroba y el dominio @uni.edu.ni tal cual.")
-parrafo("Y un punto que nos costó discusiones: la validación es **estricta**. No recortamos espacios, "
-        "no pasamos todo a minúsculas, no «arreglamos» la entrada antes de revisarla. Si el usuario "
+parrafo("Y un punto que me costó decidir: la validación es **estricta**. No recorto espacios, "
+        "no paso todo a minúsculas, no «arreglo» la entrada antes de revisarla. Si el usuario "
         "escribió un espacio al final, ese espacio es un carácter fuera de Σ y la cadena se rechaza. "
         "Suena duro, sí, pero es lo correcto: el sistema debe validar lo que el usuario escribió, no "
-        "lo que quisiéramos que hubiera escrito.")
+        "lo que me hubiera gustado que escribiera.")
 tabla(
     ["Elemento", "Regla formal", "Ejemplos válidos", "Ejemplos inválidos"],
     [
@@ -515,7 +515,7 @@ parrafo("Son siete veredictos: **válido** (todo bien, terminó en q18); **símb
         "(apareció algo fuera de Σ: una mayúscula, un espacio, un #); **iniciales inválidas** y "
         "**dígitos inválidos** (el símbolo era válido, pero la parte de iniciales no llegó a dos "
         "letras o el número se quedó en uno, o se pasó del máximo); **dominio inválido** (el dominio "
-        "no es el correcto o se quedó a medias); **caracteres extra** (llegamos a q18 y seguía "
+        "no es el correcto o se quedó a medias); **caracteres extra** (llegué a q18 y seguía "
         "habiendo símbolos, como en js25@uni.edu.ni.mx); y **cadena vacía** (no hay nada que leer, y "
         "q0 no es final).")
 tabla(
@@ -541,7 +541,7 @@ tabla(
     anchos=[3.4, 8.6, 4.0], tam=9)
 
 h(2, "4.4 Casos de prueba de referencia")
-parrafo("El enunciado propone seis cadenas: dos válidas y cuatro inválidas. Las probamos una por "
+parrafo("El enunciado propone seis cadenas: dos válidas y cuatro inválidas. Las probé una por "
         "una y todas dieron lo esperado (Tabla 3). Es un alivio, porque son las que el docente va a "
         "revisar primero.")
 tabla(
@@ -558,15 +558,15 @@ tabla(
     anchos=[4.2, 5.0, 3.2, 3.6], tam=9)
 
 h(2, "4.5 Ambigüedades del enunciado y decisiones adoptadas")
-parrafo("Aquí toca ser honestos: el enunciado tenía tres o cuatro puntos que no cerraban del "
-        "todo, y hubo que decidir. Lo dejamos por escrito en la Tabla 4 para que no parezca "
+parrafo("Aquí toca ser honesto: el enunciado tenía tres o cuatro puntos que no cerraban del "
+        "todo, y hubo que decidir. Lo dejé por escrito en la Tabla 4 para que no parezca "
         "descuido.")
 parrafo("El alfabeto, por ejemplo, aparecía con las letras e, d, u, n, i repetidas y sin la llave de "
         "cierre. Decisión: esas letras ya están dentro de a–z, así que el alfabeto correcto es "
         "**Σ = {a–z} ∪ {0–9} ∪ {@, .}**, con 38 símbolos. Punto.")
 parrafo("Otro caso: el enunciado pedía clasificar js25@uni.edu.niX como «caracteres extra», pero la X "
         "no pertenece a Σ. Y si no pertenece al alfabeto, no puede ser un carácter extra del "
-        "lenguaje: es un **símbolo no permitido**. Nos quedamos con la lectura estricta, que además "
+        "lenguaje: es un **símbolo no permitido**. Me quedé con la lectura estricta, que además "
         "es la que respalda la teoría de conjuntos.")
 parrafo("Quedaba la duda de los espacios, la cadena vacía y el null. Respuesta corta: no se recorta "
         "nada, la cadena vacía se rechaza porque q0 no es final, y null también se rechaza, pero sin "
@@ -599,8 +599,8 @@ tabla(
 
 h(1, "5. Formalización matemática del AFD")
 parrafo("Con las reglas claras, el paso siguiente es traducirlas a la tupla formal. Cada elemento "
-        "de **M = (Q, Σ, δ, q0, F)** sale de lo que ya decidimos en la sección anterior; la tabla "
-        "siguiente lo resume y después justificamos cada pieza.")
+        "de **M = (Q, Σ, δ, q0, F)** sale de lo que ya decidí en la sección anterior; la tabla "
+        "siguiente lo resume y después justifico cada pieza.")
 tabla(
     ["Símbolo", "Elemento", "Valor en este proyecto"],
     [
@@ -711,7 +711,7 @@ vineta("**Complejidad.** Una sola pasada por la cadena: tiempo O(n) y memoria co
 
 h(2, "5.6 Equivalencia de nomenclatura con la guía")
 parrafo("Un detalle de nombres, para que no haya confusión: la guía llama **qE** al estado de "
-        "error. En el código usamos **q19**, simplemente para no romper la numeración de q0 a q19. La "
+        "error. En el código uso **q19**, simplemente para no romper la numeración de q0 a q19. La "
         "equivalencia es exacta y está resumida en la Tabla 9.")
 tabla(
     ["Nomenclatura de la guía", "Nomenclatura del proyecto", "Observación"],
@@ -1077,7 +1077,7 @@ figura(DOCS + "captura-interfaz.png",
 
 h(2, "Anexo B. Capturas de pantalla del sistema en ejecución")
 parrafo("Las capturas salieron de ejecutar la aplicación. La alerta modal aparece encima de la "
-        "ventana principal y se cierra con «Aceptar»; debajo de cada figura transcribimos su texto "
+        "ventana principal y se cierra con «Aceptar»; debajo de cada figura transcribo su texto "
         "exacto, para que quede constancia del mensaje que recibe el usuario.")
 
 parrafo("**Figura B.1 — Validación exitosa de una cadena válida.**", tam=12, espacio_tras=2,
