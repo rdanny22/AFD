@@ -23,6 +23,41 @@ public final class BancoCasos {
     /** Recurso con la batería mínima de casos. */
     public static final String RECURSO = "/casos-prueba.csv";
 
+    /** Nombre con el que se identifica el banco de respaldo en los mensajes de la interfaz. */
+    public static final String NOMBRE_INTEGRADO = "banco integrado";
+
+    /**
+     * Banco de respaldo definido en el propio código.
+     *
+     * <p>Se usa cuando {@link #RECURSO} no está disponible, por ejemplo en un jar empaquetado sin
+     * la carpeta de recursos. Contiene exactamente los mismos 22 casos que el archivo, en el mismo
+     * orden; la prueba {@code BancoCasosTest} verifica que ambas fuentes coinciden para que no se
+     * desincronicen.</p>
+     */
+    private static final List<CasoPrueba> CASOS_INTEGRADOS = List.of(
+            new CasoPrueba("js25@uni.edu.ni", true, "Caso canónico del enunciado: 2 iniciales y 2 dígitos"),
+            new CasoPrueba("lmra123@uni.edu.ni", true, "Límites máximos: 4 iniciales y 3 dígitos"),
+            new CasoPrueba("ab12@uni.edu.ni", true, "Límites mínimos: 2 iniciales y 2 dígitos"),
+            new CasoPrueba("abcd999@uni.edu.ni", true, "Límites máximos en ambas partes"),
+            new CasoPrueba("Js25@unicomp.edu", false, "La mayúscula J no pertenece a Sigma"),
+            new CasoPrueba("j@unicomp.edu", false, "Falta el número y el dominio es incorrecto"),
+            new CasoPrueba("js25@unicom.edu", false, "Dominio mal escrito"),
+            new CasoPrueba("abc123@gmail.com", false, "Dominio incorrecto"),
+            new CasoPrueba("JS25@uni.edu.ni", false, "Iniciales en mayúscula"),
+            new CasoPrueba("js25@UNI.EDU.NI", false, "Dominio en mayúsculas"),
+            new CasoPrueba("js2@uni.edu.ni", false, "Un solo dígito: se requieren 2 o 3"),
+            new CasoPrueba("js2500@uni.edu.ni", false, "Cuatro dígitos: se requieren 2 o 3"),
+            new CasoPrueba("a12@uni.edu.ni", false, "Una sola inicial: se requieren de 2 a 4"),
+            new CasoPrueba("abcde12@uni.edu.ni", false, "Cinco iniciales: se requieren de 2 a 4"),
+            new CasoPrueba("js25@uni.edu.ni.mx", false, "Caracteres extra después de alcanzar q18"),
+            new CasoPrueba("js25uni.edu.ni", false, "Falta la arroba del dominio"),
+            new CasoPrueba("js25@uni.edu.ni ", false, "Espacio final: carácter fuera de Sigma"),
+            new CasoPrueba("js25@uni.edu", false, "Dominio truncado"),
+            new CasoPrueba("js25@uni.edu.n", false, "Dominio truncado"),
+            new CasoPrueba("js25@uni.edu.ni#", false, "Carácter fuera de Sigma después de q18"),
+            new CasoPrueba("js25", false, "Falta el número y el dominio"),
+            new CasoPrueba("", false, "Cadena vacía: q0 no es un estado final"));
+
     private final List<CasoPrueba> casos;
     private final Map<String, Boolean> esperadosPorCadena;
 
@@ -42,6 +77,15 @@ public final class BancoCasos {
      */
     public static BancoCasos vacio() {
         return new BancoCasos(List.of());
+    }
+
+    /**
+     * Banco de respaldo incluido en el código, con los mismos casos que {@link #RECURSO}.
+     *
+     * @return el banco integrado
+     */
+    public static BancoCasos incluido() {
+        return new BancoCasos(CASOS_INTEGRADOS);
     }
 
     /**

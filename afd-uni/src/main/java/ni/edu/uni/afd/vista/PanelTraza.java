@@ -123,7 +123,7 @@ public final class PanelTraza extends JPanel {
     private static String secuencia(ResultadoValidacion resultado) {
         return resultado.consumioTodo()
                 ? resultado.caminoCompacto()
-                : resultado.caminoCompacto() + " ⛔";
+                : resultado.caminoCompacto() + " (corte)";
     }
 
     private void desplazarAlFinal() {
